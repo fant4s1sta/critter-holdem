@@ -1,0 +1,42 @@
+{
+  "name": "critter-holdem",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx server/index.ts",
+    "build": "next build && tsc -p tsconfig.server.json",
+    "build:server": "tsc -p tsconfig.server.json",
+    "start": "NODE_ENV=production node dist/server/server/index.js",
+    "lint": "eslint",
+    "test:engine": "tsx server/games/texas-holdem/engine.test.ts",
+    "test:rooms": "tsx server/room-manager.test.ts",
+    "test:room-sync": "tsx src/lib/room-state-sync.test.ts",
+    "test:layout": "tsx src/lib/seat-layout.test.ts",
+    "test:stage": "tsx src/lib/design-stage.test.ts",
+    "test:cards": "tsx src/lib/card-visuals.test.ts",
+    "test:reveal": "tsx src/lib/reveal-hole-cards.test.ts",
+    "test:equity": "tsx src/lib/equity.test.ts",
+    "test:skill": "tsx server/games/skill-mode/skill-runtime.test.ts"
+  },
+  "dependencies": {
+    "next": "^16.3.4",
+    "qrcode": "^1.5.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "tsx": "^4.23.12"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^15.5.9",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
