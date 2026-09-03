@@ -349,6 +349,7 @@ export function SkillRoomClient({
               <DealerSpeech
                 action={room.game?.lastAction}
                 skillEvent={room.you?.skill?.lastSkillEvent}
+                actionContext={`${room.game?.handNumber ?? 0}-${room.game?.street ?? ""}`}
               />
             )
           }

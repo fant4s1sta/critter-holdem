@@ -162,6 +162,7 @@ export interface SkillPublicState {
     playerId: string;
     playerName: string;
     text: string;
+    at?: number;
   } | null;
 }
 

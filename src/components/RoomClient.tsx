@@ -308,7 +308,12 @@ export function RoomClient({
         <RoomTableShell
           isLobby={inLobby}
           boardOverlay={
-            inLobby ? null : <DealerSpeech action={room.game?.lastAction} />
+            inLobby ? null : (
+              <DealerSpeech
+                action={room.game?.lastAction}
+                actionContext={`${room.game?.handNumber ?? 0}-${room.game?.street ?? ""}`}
+              />
+            )
           }
           tableCenter={
             inLobby ? (

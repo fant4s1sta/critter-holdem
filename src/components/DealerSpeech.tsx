@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SkillPublicState, TexasHoldemPublicState } from "@/lib/types";
 
 type LastAction = NonNullable<TexasHoldemPublicState["lastAction"]>;
@@ -9,6 +9,11 @@ type SkillEvent = NonNullable<SkillPublicState["lastSkillEvent"]>;
 type Speech =
   | { kind: "action"; key: string; text: string }
   | { kind: "skill"; key: string; text: string };
+
+export type DealerSpeechSigs = {
+  action: string | null;
+  skill: string | null;
+};
 
 function actionLabel(type: LastAction["type"]) {
   switch (type) {
@@ -44,40 +49,82 @@ export function formatDealerLine(action: LastAction): string {
   return `${who} ${verb}${amount}`;
 }
 
-function actionKey(action: LastAction) {
-  return `a:${action.playerId}-${action.type}-${action.amount ?? 0}-${action.playerName}`;
+export function actionSpeechSig(
+  action: LastAction | null | undefined,
+  context = "",
+) {
+  if (!action) return null;
+  return `${context}|${action.playerId}|${action.type}|${action.amount ?? ""}|${action.playerName}|${action.ai ? 1 : 0}`;
 }
 
-function skillKey(event: SkillEvent) {
-  return `s:${event.playerId}-${event.skillName}-${event.text}`;
+export function skillSpeechSig(event: SkillEvent | null | undefined) {
+  if (!event) return null;
+  return `${event.at ?? ""}|${event.playerId}|${event.skillName}|${event.text}`;
+}
+
+/**
+ * Skill patches reuse the last skill event object, so a later action must
+ * win once it changes. If both signatures are new (first paint / same tick),
+ * keep the ordinary action so reconnects don't stick on an old skill line.
+ */
+export function nextDealerSpeech(
+  prev: DealerSpeechSigs,
+  input: {
+    action?: LastAction | null;
+    skillEvent?: SkillEvent | null;
+    actionContext?: string;
+  },
+): { sigs: DealerSpeechSigs; speech?: Speech } {
+  const action = actionSpeechSig(input.action, input.actionContext);
+  const skill = skillSpeechSig(input.skillEvent);
+  const sigs = { action, skill };
+  const actionIsNew = action != null && action !== prev.action;
+  const skillIsNew = skill != null && skill !== prev.skill;
+
+  if (skillIsNew && !actionIsNew && input.skillEvent) {
+    return {
+      sigs,
+      speech: {
+        kind: "skill",
+        key: `s:${skill}`,
+        text: input.skillEvent.text,
+      },
+    };
+  }
+  if (actionIsNew && input.action) {
+    return {
+      sigs,
+      speech: {
+        kind: "action",
+        key: `a:${action}`,
+        text: formatDealerLine(input.action),
+      },
+    };
+  }
+  return { sigs };
 }
 
 export function DealerSpeech({
   action,
   skillEvent,
+  actionContext = "",
 }: {
   action?: LastAction | null;
   skillEvent?: SkillEvent | null;
+  actionContext?: string;
 }) {
   const [speech, setSpeech] = useState<Speech | null>(null);
+  const sigsRef = useRef<DealerSpeechSigs>({ action: null, skill: null });
 
   useEffect(() => {
-    if (!action) return;
-    setSpeech({
-      kind: "action",
-      key: actionKey(action),
-      text: formatDealerLine(action),
+    const next = nextDealerSpeech(sigsRef.current, {
+      action,
+      skillEvent,
+      actionContext,
     });
-  }, [action]);
-
-  useEffect(() => {
-    if (!skillEvent) return;
-    setSpeech({
-      kind: "skill",
-      key: skillKey(skillEvent),
-      text: skillEvent.text,
-    });
-  }, [skillEvent]);
+    sigsRef.current = next.sigs;
+    if (next.speech) setSpeech(next.speech);
+  }, [action, skillEvent, actionContext]);
 
   if (!speech) return null;
 

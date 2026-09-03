@@ -92,6 +92,7 @@ function broadcast(
     playerId: player.id,
     playerName: player.name,
     text,
+    at: Date.now(),
   };
 }
 
