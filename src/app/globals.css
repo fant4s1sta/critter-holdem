@@ -1702,6 +1702,10 @@ body {
   margin-top: -100px;
 }
 
+.reference-table-board:has(.dealer-speech) {
+  overflow: visible;
+}
+
 .lobby-table-shell.is-lobby .reference-table-board {
   margin-top: 0;
   transform: translateY(-100px);
@@ -1758,15 +1762,10 @@ body {
 
 .dealer-speech {
   position: absolute;
-  /*
-   * Reference table art bakes the coyote into the board. Keep the bubble
-   * on-canvas beside the face — an above-hat offset is clipped by
-   * .reference-table-board overflow.
-   */
-  left: 76%;
+  left: 50%;
   top: 6.5%;
   z-index: 4;
-  max-width: 11.5rem;
+  max-width: 15.5rem;
   margin: 0;
   padding: 0.45rem 0.7rem;
   border-radius: 0.85rem;
@@ -1778,9 +1777,9 @@ body {
   line-height: 1.35;
   letter-spacing: 0.01em;
   white-space: normal;
-  text-align: center;
+  text-align: left;
   pointer-events: none;
-  transform: translate(-50%, 0);
+  transform: translate(-50%, calc(-100% - 0.45rem));
   box-shadow:
     0 2px 0 rgba(90, 34, 12, 0.28),
     0 4px 10px rgba(0, 0, 0, 0.18);
@@ -1790,7 +1789,7 @@ body {
 .dealer-speech::before {
   content: "";
   position: absolute;
-  left: 22%;
+  left: 50%;
   bottom: -0.4rem;
   width: 0.6rem;
   height: 0.6rem;
@@ -1818,11 +1817,11 @@ body {
 @keyframes dealer-speech-in {
   from {
     opacity: 0;
-    transform: translate(-50%, 0.35rem) scale(0.96);
+    transform: translate(-50%, calc(-100% - 0.1rem)) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translate(-50%, calc(-100% - 0.45rem)) scale(1);
   }
 }
 
