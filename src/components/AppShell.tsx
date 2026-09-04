@@ -31,8 +31,8 @@ export function AppShell() {
     void Promise.all([
       preloadCriticalImages(),
       preloadAllAnimalAvatars(),
+      preloadAllAnimalStandees(),
     ]).then(() => setAssetsReady(true));
-    void preloadAllAnimalStandees();
   }, []);
 
   useEffect(() => {

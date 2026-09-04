@@ -1,4 +1,9 @@
-import { isImagePreloaded, preloadAllAnimalAvatars, preloadImage } from "./animal-display";
+import {
+  isImagePreloaded,
+  preloadAllAnimalAvatars,
+  preloadAllAnimalStandees,
+  preloadImage,
+} from "./animal-display";
 
 export const BRAND_LOGO_WEBP_SRC = "/brand-logo.webp";
 export const BRAND_LOGO_PNG_SRC = "/brand-logo.png";
@@ -28,4 +33,5 @@ export function preloadCriticalImages(): Promise<void> {
 if (typeof window !== "undefined") {
   void preloadCriticalImages();
   void preloadAllAnimalAvatars();
+  void preloadAllAnimalStandees();
 }

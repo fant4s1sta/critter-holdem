@@ -7,7 +7,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type TransitionEvent,
 } from "react";
 import { ANIMALS, type AnimalId, type RuleMode } from "@/lib/types";
@@ -15,7 +14,6 @@ import { getAnimalSkill } from "@/lib/skill-catalog";
 import {
   ANIMAL_STANDEE_SRCS,
   animalName,
-  animalStandeeScale,
   animalStandeeSrc,
   decodeImage,
   markImageLoaded,
@@ -45,7 +43,6 @@ function StandeeArt({
   onPainted: (id: AnimalId) => void;
 }) {
   const src = animalStandeeSrc(id);
-  const scale = animalStandeeScale(id);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useLayoutEffect(() => {
@@ -87,18 +84,15 @@ function StandeeArt({
   if (!src) return null;
 
   return (
-    <div
-      className="lobby-standee-portrait"
-      style={{ "--standee-scale": scale } as CSSProperties}
-    >
+    <div className="lobby-standee-portrait">
       {/* eslint-disable-next-line @next/next/no-img-element -- standee must decode on the 3D card face */}
       <img
         ref={imgRef}
         src={src}
         alt=""
         className="lobby-standee-art"
-        width={320}
-        height={420}
+        width={508}
+        height={768}
         draggable={false}
         loading="eager"
         decoding="sync"
@@ -274,7 +268,7 @@ export function LobbyStandeeShowcase({
       <div className="lobby-standee-preload" aria-hidden>
         {ANIMAL_STANDEE_SRCS.map((src) => (
           // eslint-disable-next-line @next/next/no-img-element -- offscreen decode cache for WebKit 3D faces
-          <img key={src} src={src} alt="" width={320} height={420} decoding="async" />
+          <img key={src} src={src} alt="" width={508} height={768} decoding="async" />
         ))}
       </div>
       <div className={`lobby-standee-flip${flipped ? " is-flipped" : ""}`}>

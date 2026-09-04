@@ -61,17 +61,6 @@ export function animalAvatarScale(id: AnimalId | null | undefined): number {
   return ANIMAL_AVATAR_SCALE[id] ?? 1;
 }
 
-const ANIMAL_STANDEE_SCALE: Partial<Record<AnimalId, number>> = {
-  elephant: 1.22,
-  lizard: 1.22,
-  mouse: 1.16,
-};
-
-export function animalStandeeScale(id: AnimalId | null | undefined): number {
-  if (!id) return 1;
-  return ANIMAL_STANDEE_SCALE[id] ?? 1;
-}
-
 export const AI_ASSISTANT_SRC = "/ai-assistant.webp";
 export const SKILL_ITEM_SRC = "/skill-item.png";
 
