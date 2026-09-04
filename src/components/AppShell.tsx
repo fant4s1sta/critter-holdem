@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FullScreenLoader } from "./FullScreenLoader";
 import { HomeLobby } from "./HomeLobby";
 import { RoomClient } from "./RoomClient";
@@ -15,6 +15,7 @@ import {
 } from "@/lib/session";
 import { getSocket } from "@/lib/socket";
 import { preloadAllAnimalAvatars, preloadAllAnimalStandees } from "@/lib/animal-display";
+import { dismissBootSplash } from "@/lib/boot-splash";
 import { preloadCriticalImages } from "@/lib/critical-images";
 import type { RoomPublicState, RuleMode } from "@/lib/types";
 
@@ -34,6 +35,11 @@ export function AppShell() {
       preloadAllAnimalStandees(),
     ]).then(() => setAssetsReady(true));
   }, []);
+
+  useLayoutEffect(() => {
+    if (!ready || !assetsReady) return;
+    dismissBootSplash();
+  }, [ready, assetsReady]);
 
   useEffect(() => {
     const urlCode = readRoomCodeFromLocation();

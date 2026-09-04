@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_SC } from "next/font/google";
 import "./globals.css";
+import { BootSplash } from "@/components/BootSplash";
 import { CriticalImagePreload } from "@/components/CriticalImagePreload";
 import { DesignStage } from "@/components/DesignStage";
 import { OrientationPrompt } from "@/components/OrientationPrompt";
@@ -47,7 +48,11 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: STAGE_SCALE_BOOTSTRAP }} />
         <CriticalImagePreload />
       </head>
-      <body className={`${body.variable} antialiased`}>
+      <body
+        className={`${body.variable} antialiased`}
+        style={{ background: "#120e0a" }}
+      >
+        <BootSplash />
         <OrientationPrompt />
         <DesignStage>{children}</DesignStage>
       </body>
