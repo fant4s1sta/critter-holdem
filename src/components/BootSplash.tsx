@@ -27,7 +27,6 @@ export function BootSplash() {
             <span className="boot-splash-ring" />
             <picture className="boot-splash-logo">
               <source srcSet={BRAND_LOGO_WEBP_SRC} type="image/webp" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={BRAND_LOGO_PNG_SRC}
                 alt=""
