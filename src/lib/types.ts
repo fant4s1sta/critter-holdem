@@ -4,40 +4,40 @@ export type GameTypeId = "texas-holdem";
 export type RuleMode = "classic" | "skill";
 
 export type AnimalId =
-  | "dog"
-  | "cat"
-  | "mouse"
-  | "hamster"
-  | "rabbit"
-  | "fox"
-  | "bear"
-  | "panda"
-  | "polar-bear"
-  | "koala"
+  | "lizard"
   | "tiger"
-  | "lion"
-  | "cow"
+  | "cat"
+  | "rabbit"
+  | "panda"
+  | "alpaca"
+  | "dog"
+  | "gorilla"
+  | "mouse"
+  | "otter"
   | "pig"
-  | "frog"
-  | "dragon";
+  | "koala"
+  | "ox"
+  | "elephant"
+  | "lion"
+  | "fox";
 
 export const ANIMALS: { id: AnimalId; name: string; emoji: string }[] = [
-  { id: "dog", name: "小狗", emoji: "🐶" },
-  { id: "cat", name: "小猫", emoji: "🐱" },
-  { id: "mouse", name: "老鼠", emoji: "🐭" },
-  { id: "hamster", name: "仓鼠", emoji: "🐹" },
-  { id: "rabbit", name: "兔子", emoji: "🐰" },
-  { id: "fox", name: "狐狸", emoji: "🦊" },
-  { id: "bear", name: "小熊", emoji: "🐻" },
-  { id: "panda", name: "熊猫", emoji: "🐼" },
-  { id: "polar-bear", name: "北极熊", emoji: "🐻‍❄️" },
-  { id: "koala", name: "考拉", emoji: "🐨" },
+  { id: "lizard", name: "蜥蜴", emoji: "🦎" },
   { id: "tiger", name: "老虎", emoji: "🐯" },
-  { id: "lion", name: "狮子", emoji: "🦁" },
-  { id: "cow", name: "奶牛", emoji: "🐮" },
+  { id: "cat", name: "小猫", emoji: "🐱" },
+  { id: "rabbit", name: "兔子", emoji: "🐰" },
+  { id: "panda", name: "熊猫", emoji: "🐼" },
+  { id: "alpaca", name: "羊驼", emoji: "🦙" },
+  { id: "dog", name: "小狗", emoji: "🐶" },
+  { id: "gorilla", name: "猩猩", emoji: "🦍" },
+  { id: "mouse", name: "老鼠", emoji: "🐭" },
+  { id: "otter", name: "水獭", emoji: "🦦" },
   { id: "pig", name: "小猪", emoji: "🐷" },
-  { id: "frog", name: "青蛙", emoji: "🐸" },
-  { id: "dragon", name: "龙", emoji: "🐲" },
+  { id: "koala", name: "考拉", emoji: "🐨" },
+  { id: "ox", name: "大牛", emoji: "🐂" },
+  { id: "elephant", name: "大象", emoji: "🐘" },
+  { id: "lion", name: "狮子", emoji: "🦁" },
+  { id: "fox", name: "狐狸", emoji: "🦊" },
 ];
 
 export type RoomStatus = "lobby" | "playing" | "finished";

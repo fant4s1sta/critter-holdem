@@ -6,12 +6,14 @@ import { PokerTableSurface } from "./PokerTableSurface";
 export function RoomTableShell({
   boardOverlay,
   tableCenter,
+  feltOverlay,
   seats,
   footer,
   isLobby,
 }: {
   boardOverlay?: ReactNode;
   tableCenter: ReactNode;
+  feltOverlay?: ReactNode;
   seats: ReactNode;
   footer: ReactNode;
   isLobby: boolean;
@@ -30,6 +32,7 @@ export function RoomTableShell({
 
             <div className="table-center">{tableCenter}</div>
 
+            {feltOverlay}
             {seats}
           </div>
         </div>

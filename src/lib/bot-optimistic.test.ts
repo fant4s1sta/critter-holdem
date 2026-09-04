@@ -3,17 +3,17 @@ import { pickNextAvailableAvatar } from "./bot-optimistic";
 import type { AnimalId } from "./types";
 
 {
-  assert.equal(pickNextAvailableAvatar(new Set<AnimalId>()), "dog");
+  assert.equal(pickNextAvailableAvatar(new Set<AnimalId>()), "lizard");
 }
 
 {
-  assert.equal(pickNextAvailableAvatar(new Set<AnimalId>(["dog"])), "cat");
+  assert.equal(pickNextAvailableAvatar(new Set<AnimalId>(["lizard"])), "tiger");
 }
 
 {
   assert.equal(
-    pickNextAvailableAvatar(new Set<AnimalId>(["dog", "cat"])),
-    "mouse",
+    pickNextAvailableAvatar(new Set<AnimalId>(["lizard", "tiger"])),
+    "cat",
   );
 }
 

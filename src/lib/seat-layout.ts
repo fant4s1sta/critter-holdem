@@ -28,6 +28,12 @@ export const TABLE_SEAT_CUPS: ReadonlyArray<readonly [number, number]> = [
 /** Seat 0 = dealer's left; seats 1…9 continue counter-clockwise (10-max). */
 export const SEAT_TO_CUP: readonly number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+/** Lobby standee sits in the felt pocket between lower-left (4) and lower-right (5). */
+export const LOBBY_STANDEE_ANCHOR = {
+  x: ((TABLE_SEAT_CUPS[4][0] + TABLE_SEAT_CUPS[5][0]) / 2) * 100,
+  y: TABLE_SEAT_CUPS[4][1] * 100,
+} as const;
+
 const SEAT_COUNT = TABLE_SEAT_CUPS.length;
 
 function roundCoord(value: number) {

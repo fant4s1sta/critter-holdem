@@ -29,6 +29,7 @@ import { HandResultModal } from "./HandResultModal";
 import { InviteModal } from "./InviteModal";
 import { RoomTableShell } from "./RoomLobbyStage";
 import { LobbyAnimalPicker } from "./LobbyAnimalPicker";
+import { LobbyStandeeShowcase } from "./LobbyStandeeShowcase";
 import { CasinoBackdrop } from "./CasinoBackdrop";
 import { LobbyAlertModal } from "./LobbyAlertModal";
 import { WinRateHint } from "./WinRateHint";
@@ -353,6 +354,14 @@ export function SkillRoomClient({
               />
             )
           }
+          feltOverlay={
+            inLobby && !room.you?.spectator ? (
+              <LobbyStandeeShowcase
+                avatarId={me?.avatarId ?? null}
+                ruleMode={room.ruleMode}
+              />
+            ) : null
+          }
           tableCenter={
             inLobby ? (
               <p className="lobby-table-center">
@@ -459,7 +468,6 @@ export function SkillRoomClient({
                   <div className="lobby-avatar-picker">
                     <LobbyAnimalPicker
                       avatarId={me?.avatarId ?? null}
-                      ruleMode={room.ruleMode}
                       onSelect={setAvatar}
                     />
                   </div>

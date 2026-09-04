@@ -80,7 +80,7 @@ function manager() {
   const spectator = rooms.joinRoom({
     code: created.room.code,
     name: "观众",
-    avatarId: "bear",
+    avatarId: "gorilla",
   } as never);
   assert.equal(spectator.spectator, true);
 }
@@ -152,7 +152,7 @@ function manager() {
   const spectator = rooms.joinRoom({
     code: host.room.code,
     name: "观众",
-    avatarId: "bear",
+    avatarId: "gorilla",
   } as never);
   const specState = rooms.getPublicState(
     host.room.code,

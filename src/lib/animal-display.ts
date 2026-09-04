@@ -8,22 +8,22 @@ export function animalName(id: AnimalId | null | undefined): string {
 }
 
 export const ANIMAL_AVATAR_BG: Record<AnimalId, string> = {
-  dog: "#F0B429",
-  cat: "#F27457",
-  mouse: "#8FA3C4",
-  hamster: "#E8A23A",
-  rabbit: "#F0A8C0",
-  fox: "#E86A2A",
-  bear: "#C47A3A",
-  panda: "#5AAA62",
-  "polar-bear": "#6BB8D8",
-  koala: "#88B06A",
+  lizard: "#7BC86A",
   tiger: "#F0A010",
-  lion: "#E0B820",
-  cow: "#7EC8C0",
+  cat: "#5A4A6A",
+  rabbit: "#F0A8C0",
+  panda: "#5AAA62",
+  alpaca: "#E8D4B0",
+  dog: "#F0B429",
+  gorilla: "#8A7A68",
+  mouse: "#8FA3C4",
+  otter: "#C4A070",
   pig: "#F090A8",
-  frog: "#62C04A",
-  dragon: "#2DB8A0",
+  koala: "#88B06A",
+  ox: "#D4B06A",
+  elephant: "#7EC8C0",
+  lion: "#E0B820",
+  fox: "#E86A2A",
 };
 
 export function animalAvatarSrc(id: AnimalId | null | undefined): string | null {
@@ -32,22 +32,44 @@ export function animalAvatarSrc(id: AnimalId | null | undefined): string | null 
   return `/avatars/${id}.webp`;
 }
 
+export function animalStandeeSrc(id: AnimalId | null | undefined): string | null {
+  if (!id) return null;
+  if (!ANIMALS.some((animal) => animal.id === id)) return null;
+  return `/standees/${id}.webp`;
+}
+
+export function animalAvatarBgRgb(id: AnimalId | null | undefined): string {
+  const hex = animalAvatarBg(id).replace("#", "");
+  const r = Number.parseInt(hex.slice(0, 2), 16);
+  const g = Number.parseInt(hex.slice(2, 4), 16);
+  const b = Number.parseInt(hex.slice(4, 6), 16);
+  return `${r}, ${g}, ${b}`;
+}
+
 export function animalAvatarBg(id: AnimalId | null | undefined): string {
   if (!id) return "#2a241c";
   return ANIMAL_AVATAR_BG[id] ?? "#2a241c";
 }
 
 const ANIMAL_AVATAR_SCALE: Partial<Record<AnimalId, number>> = {
-  pig: 0.9,
-  hamster: 0.8,
-  mouse: 0.8,
-  cat: 0.9,
-  frog: 0.9,
+  gorilla: 1.32,
+  elephant: 1.32,
 };
 
 export function animalAvatarScale(id: AnimalId | null | undefined): number {
   if (!id) return 1;
   return ANIMAL_AVATAR_SCALE[id] ?? 1;
+}
+
+const ANIMAL_STANDEE_SCALE: Partial<Record<AnimalId, number>> = {
+  elephant: 1.22,
+  lizard: 1.22,
+  mouse: 1.16,
+};
+
+export function animalStandeeScale(id: AnimalId | null | undefined): number {
+  if (!id) return 1;
+  return ANIMAL_STANDEE_SCALE[id] ?? 1;
 }
 
 export const AI_ASSISTANT_SRC = "/ai-assistant.webp";

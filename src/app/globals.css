@@ -801,29 +801,83 @@ body {
 }
 
 .lobby-animal-cell {
+  appearance: none;
   display: grid;
   aspect-ratio: 1;
   place-items: center;
+  padding: 0;
+  overflow: visible;
+  border: none;
+  background: transparent;
+  transition: transform 80ms ease;
+}
+
+.lobby-chip {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  filter:
+    drop-shadow(0 1px 0 #5a2208)
+    drop-shadow(0 3px 2px rgba(42, 12, 4, 0.4));
+  transition: transform 80ms ease, filter 80ms ease;
+}
+
+.lobby-chip-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.lobby-chip-face {
+  position: relative;
+  z-index: 1;
+  /* Match the inner dark ring (r=36.6, stroke 0.9 → 72.3%) and
+     tuck 0.5% under it so no hairline gap. */
+  width: 72.8%;
+  height: 72.8%;
   overflow: hidden;
-  border-radius: 0.65rem;
-  border: 3px solid var(--lobby-wood-deep);
-  background: linear-gradient(180deg, #fff9e8 0%, #efd59a 100%);
-  box-shadow:
-    inset 0 2px 0 transparent,
-    0 0 0 2px transparent;
-  transition: transform 80ms ease, border-color 80ms ease, box-shadow 80ms ease;
+  border-radius: 50%;
+}
+
+.lobby-chip-face .animal-avatar-wrap {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.lobby-chip-face .animal-avatar {
+  width: 118%;
+  height: 118%;
+  max-height: none;
+  object-fit: cover;
+  object-position: bottom center;
 }
 
 .lobby-animal-cell .animal-avatar {
   transition: none;
 }
 
-.lobby-animal-cell.is-selected {
-  border-color: #e89a2e;
-  background: linear-gradient(180deg, #fff8e0 0%, #ffd45c 100%);
-  box-shadow:
-    inset 0 2px 0 #fff,
-    0 0 0 2px rgba(255, 196, 90, 0.45);
+.lobby-animal-cell:focus-visible {
+  outline: none;
+}
+
+.lobby-animal-cell:focus-visible .lobby-chip {
+  filter:
+    drop-shadow(0 0 5px rgba(255, 196, 90, 0.7))
+    drop-shadow(0 1px 0 #5a2208)
+    drop-shadow(0 3px 2px rgba(42, 12, 4, 0.4));
+}
+
+.lobby-animal-cell.is-selected .lobby-chip {
+  transform: scale(1.08);
+  filter:
+    drop-shadow(0 0 5px rgba(255, 196, 90, 0.7))
+    drop-shadow(0 2px 0 #5a2208)
+    drop-shadow(0 4px 3px rgba(42, 12, 4, 0.4));
 }
 
 .lobby-skill-blurb {
@@ -1095,6 +1149,143 @@ body {
   font-weight: 700;
   color: #f0c878;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.lobby-standee-dock {
+  position: absolute;
+  z-index: 3;
+  width: 6.9rem;
+  transform: translate(-50%, calc(-100% + 4rem));
+  pointer-events: none;
+}
+
+.lobby-standee-flip {
+  width: 100%;
+  aspect-ratio: 242 / 340;
+  perspective: 900px;
+}
+
+.lobby-standee-flip .card-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.lobby-standee-flip.is-flipped .card-flip-inner {
+  transform: rotateY(180deg);
+}
+
+.lobby-standee-flip .lobby-standee-card {
+  aspect-ratio: auto;
+  width: 100%;
+  height: 100%;
+}
+
+.lobby-standee-card {
+  position: relative;
+  aspect-ratio: 242 / 340;
+  overflow: hidden;
+  border-radius: 0.38rem;
+  border: 2px solid #fff8e8;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 252, 246, 0.9) 0%,
+    rgba(248, 236, 208, 0.82) 100%
+  );
+  box-shadow:
+    0 0 0 1.5px #8f3c10,
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+    0 7px 3px rgba(45, 14, 4, 0.36);
+  backdrop-filter: blur(8px) saturate(1.15);
+  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+}
+
+.lobby-standee-card.is-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12%;
+  border-color: #fff;
+  background:
+    linear-gradient(145deg, #2a6b4f 0%, #1a4d38 42%, #123528 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+    inset -2px -2px 0 rgba(0, 0, 0, 0.35),
+    0 7px 3px rgba(45, 14, 4, 0.36);
+}
+
+.lobby-standee-portrait {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.lobby-standee-art {
+  width: calc(100% * var(--standee-scale, 1));
+  height: calc(100% * var(--standee-scale, 1));
+  max-width: none;
+  object-fit: contain;
+  object-position: bottom center;
+  align-self: flex-end;
+  opacity: 0.94;
+}
+
+.lobby-standee-sticker {
+  position: absolute;
+  z-index: 4;
+  right: -0.55rem;
+  bottom: 0.7rem;
+  left: -0.55rem;
+  padding: 0.32rem 0.4rem 0.38rem;
+  border-radius: 0.12rem;
+  background:
+    linear-gradient(180deg, #fff8dc 0%, #f3e0a8 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 3px 5px rgba(40, 16, 0, 0.28);
+  transform: rotate(-2.5deg);
+  text-align: center;
+  color: #4a220c;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.lobby-standee-dock.is-face-up .lobby-standee-sticker {
+  opacity: 1;
+  transition-delay: 0.12s;
+}
+
+.lobby-standee-sticker::before {
+  content: "";
+  position: absolute;
+  top: -0.28rem;
+  left: 50%;
+  width: 2.1rem;
+  height: 0.55rem;
+  border-radius: 0.08rem;
+  background: rgba(255, 248, 220, 0.45);
+  box-shadow: 0 1px 2px rgba(40, 16, 0, 0.12);
+  transform: translateX(-50%) rotate(1.5deg);
+}
+
+.lobby-standee-sticker .skill {
+  margin: 0;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.lobby-standee-sticker .summary {
+  display: -webkit-box;
+  margin: 0.12rem 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  font-size: 0.5rem;
+  line-height: 1.35;
+  color: #7a4a28;
 }
 
 .lobby-seat-meta {
@@ -1849,8 +2040,12 @@ body {
     transition: none;
   }
 
-  .card-flip.is-flipped .card-flip-inner {
-    transform: rotateY(180deg);
+  .lobby-standee-sticker {
+    transition: none;
+  }
+
+  .lobby-standee-dock.is-face-up .lobby-standee-sticker {
+    transition-delay: 0s;
   }
 }
 

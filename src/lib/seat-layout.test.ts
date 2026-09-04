@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import {
   getSeatLayout,
+  LOBBY_STANDEE_ANCHOR,
   SEAT_TO_CUP,
   TABLE_SEAT_CUPS,
 } from "./seat-layout";
 
 assert.equal(TABLE_SEAT_CUPS.length, 10);
+assert.equal(LOBBY_STANDEE_ANCHOR.x, 50);
+assert.equal(LOBBY_STANDEE_ANCHOR.y, 82);
 assert.deepEqual(SEAT_TO_CUP, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 assert.equal(SEAT_TO_CUP.length, 10);
 

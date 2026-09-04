@@ -164,7 +164,7 @@ export function buildViewerSkillState(opts: {
       ).length;
       if (living < 1) {
         canUseActive = false;
-        disabledReason = "没有可冰封的对手";
+        disabledReason = "没有可砸晕的对手";
       }
     }
     if (skill.skillId === "fraud") {
@@ -306,7 +306,7 @@ export function useActiveSkill(opts: {
       broadcast(
         hand,
         player,
-        `${player.name} 熊抱了 ${target?.name ?? "对手"}`,
+        `${player.name} 依偎了 ${target?.name ?? "对手"}`,
       );
       return {};
     }
@@ -328,11 +328,11 @@ export function useActiveSkill(opts: {
       const targetId = payload.targetPlayerId;
       if (!targetId || targetId === player.id) throw new Error("请选择一名对手");
       const target = engine.getPlayer(targetId);
-      if (!target || target.folded) throw new Error("无法冰封该玩家");
+      if (!target || target.folded) throw new Error("无法砸晕该玩家");
       hand.freezeNoRaise.add(targetId);
       hand.usedActive.add(player.id);
       const tName = opts.players.find((p) => p.id === targetId)?.name ?? "对手";
-      broadcast(hand, player, `${player.name} 冰封了 ${tName}：本手不能加注`);
+      broadcast(hand, player, `${player.name} 砸晕了 ${tName}：本手不能加注`);
       return {};
     }
     case "doze": {
@@ -463,7 +463,7 @@ export function applyCowRuminate(
   hand: HandSkillState,
 ) {
   for (const p of players) {
-    if (p.avatarId !== "cow") continue;
+    if (p.avatarId !== "ox") continue;
     const seat = engine.getPlayer(p.id);
     if (!seat || seat.folded) continue;
     const bonus = Math.floor(seat.chips * 0.05);
@@ -629,13 +629,13 @@ export function settleHandSkills(opts: {
     target.chips -= move;
     caster.chips += move;
     const ref = players.find((p) => p.id === casterId);
-    if (ref) broadcast(hand, ref, `${ref.name} 熊抱平分 ${move}`);
+    if (ref) broadcast(hand, ref, `${ref.name} 依偎平分 ${move}`);
   }
 
   // Frog flush triple — check winners' hand names
   for (const w of engine.winners ?? []) {
     const p = players.find((x) => x.id === w.playerId);
-    if (!p || p.avatarId !== "frog") continue;
+    if (!p || p.avatarId !== "lizard") continue;
     const seat = engine.getPlayer(w.playerId);
     if (!seat || seat.holeCards.length < 2) continue;
     const handRank = evaluateBestHand([
