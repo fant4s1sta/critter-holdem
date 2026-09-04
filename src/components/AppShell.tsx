@@ -14,7 +14,7 @@ import {
   type RoomResumeOffer,
 } from "@/lib/session";
 import { getSocket } from "@/lib/socket";
-import { preloadAllAnimalAvatars } from "@/lib/animal-display";
+import { preloadAllAnimalAvatars, preloadAllAnimalStandees } from "@/lib/animal-display";
 import { preloadCriticalImages } from "@/lib/critical-images";
 import type { RoomPublicState, RuleMode } from "@/lib/types";
 
@@ -32,6 +32,7 @@ export function AppShell() {
       preloadCriticalImages(),
       preloadAllAnimalAvatars(),
     ]).then(() => setAssetsReady(true));
+    void preloadAllAnimalStandees();
   }, []);
 
   useEffect(() => {

@@ -1223,6 +1223,23 @@ body {
   overflow: hidden;
 }
 
+.lobby-standee-preload {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 320px;
+  height: 420px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lobby-standee-preload img {
+  position: absolute;
+  width: 320px;
+  height: 420px;
+}
+
 .lobby-standee-art {
   width: calc(100% * var(--standee-scale, 1));
   height: calc(100% * var(--standee-scale, 1));
@@ -1231,6 +1248,9 @@ body {
   object-position: bottom center;
   align-self: flex-end;
   opacity: 0.94;
+  transform: translateZ(1px);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .lobby-standee-sticker {

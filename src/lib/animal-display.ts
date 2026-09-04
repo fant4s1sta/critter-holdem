@@ -100,6 +100,31 @@ export function preloadImage(src: string): Promise<void> {
   return pending;
 }
 
+/** Decode after cache so the standee can paint on a 3D card face. */
+export async function decodeImage(src: string): Promise<void> {
+  await preloadImage(src);
+  if (typeof Image === "undefined") return;
+  const image = new Image();
+  image.src = src;
+  if (typeof image.decode === "function") {
+    try {
+      await image.decode();
+    } catch {
+      /* broken or already-decodeable; still continue */
+    }
+  }
+}
+
+export const ANIMAL_STANDEE_SRCS = ANIMALS.map(
+  (animal) => `/standees/${animal.id}.webp`,
+);
+
+export function preloadAllAnimalStandees(): Promise<void> {
+  return Promise.all(ANIMAL_STANDEE_SRCS.map((src) => preloadImage(src))).then(
+    () => undefined,
+  );
+}
+
 export function isImagePreloaded(src: string): boolean {
   return loadedSrcs.has(src);
 }
