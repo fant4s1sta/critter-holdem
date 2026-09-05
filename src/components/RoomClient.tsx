@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GameActionPayload, PublicPlayer, RoomPublicState } from "@/lib/types";
-import { getCardRenderKey, preloadAllCardImages } from "@/lib/card-visuals";
+import { getCardRenderKey } from "@/lib/card-visuals";
 import { getViewerCallAmount, recomputeViewerYou } from "@/lib/player-action-ui";
 import { pickFinalWinners } from "@/lib/final-winners";
 import { clearRoomSession, getRoomSession, saveRoomSession } from "@/lib/session";
@@ -64,10 +64,6 @@ export function RoomClient({
     setIdentity(getRoomSession(roomCode));
     setReady(true);
   }, [roomCode]);
-
-  useEffect(() => {
-    void preloadAllCardImages();
-  }, []);
 
   const { setAvatar, applyAvatarOverlay } = useAvatarSelection({
     roomCode,

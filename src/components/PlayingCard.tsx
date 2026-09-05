@@ -2,7 +2,7 @@
 
 import type { Card } from "@/lib/types";
 import { CardBack } from "@/components/CardBack";
-import { getCardAssetPath, SUIT_LABELS } from "@/lib/card-visuals";
+import { CardFaceSvg } from "@/components/CardFaceSvg";
 
 export function PlayingCard({
   card,
@@ -38,23 +38,11 @@ export function PlayingCard({
     );
   }
 
-  const assetRank = card.rank === "T" ? "10" : card.rank;
-  const cardAssetUrl = getCardAssetPath(card);
-
   return (
-    <img
-      src={cardAssetUrl}
-      alt={`${assetRank} ${SUIT_LABELS[card.suit]}`}
-      className={`${motionClass}${sizeClass} block object-contain`.trim()}
-      width={242}
-      height={340}
-      loading="eager"
-      decoding="sync"
-      style={{
-        animationDelay: `${dealDelay}ms`,
-      }}
-      aria-label={`${assetRank} ${SUIT_LABELS[card.suit]}`}
-      draggable={false}
+    <CardFaceSvg
+      card={card}
+      className={`${motionClass}${sizeClass}`.trim()}
+      dealDelay={dealDelay}
     />
   );
 }

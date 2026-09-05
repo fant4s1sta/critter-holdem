@@ -10,7 +10,7 @@ import { AnimalAvatar } from "./AnimalAvatar";
 import { BrandLogo } from "./BrandLogo";
 import { getAnimalSkill } from "@/lib/skill-catalog";
 import { SKILL_ITEM_SRC, preloadImage } from "@/lib/animal-display";
-import { getCardRenderKey, preloadAllCardImages } from "@/lib/card-visuals";
+import { getCardRenderKey } from "@/lib/card-visuals";
 import { getViewerCallAmount, recomputeViewerYou } from "@/lib/player-action-ui";
 import { pickFinalWinners } from "@/lib/final-winners";
 import { clearRoomSession, getRoomSession, saveRoomSession } from "@/lib/session";
@@ -74,7 +74,6 @@ export function SkillRoomClient({
   }, [roomCode]);
 
   useEffect(() => {
-    void preloadAllCardImages();
     void preloadImage(SKILL_ITEM_SRC);
   }, []);
 

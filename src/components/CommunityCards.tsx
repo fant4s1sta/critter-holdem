@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
 import type { Card } from "@/lib/types";
-import { preloadCardImage } from "@/lib/card-visuals";
 import { useSequentialReveal } from "@/lib/use-sequential-reveal";
 import {
   CommunityCardSlot,
@@ -17,12 +15,6 @@ export function CommunityCards({
   handNumber: number;
 }) {
   const revealed = useSequentialReveal(cards, handNumber, 90);
-
-  useEffect(() => {
-    for (const card of cards) {
-      void preloadCardImage(card);
-    }
-  }, [cards, handNumber]);
 
   return (
     <div className="community-cards" aria-label="公共牌">

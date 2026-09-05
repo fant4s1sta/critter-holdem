@@ -2,29 +2,10 @@
 
 import { useEffect, useState } from "react";
 import type { Card } from "@/lib/types";
-import { getCardAssetPath, preloadCardImage, SUIT_LABELS } from "@/lib/card-visuals";
 import { CardBack } from "./CardBack";
+import { CardFaceSvg } from "./CardFaceSvg";
 
 export type CommunitySlotMode = "empty" | "back" | "face";
-
-function CommunityCardFace({ card }: { card: Card }) {
-  const assetRank = card.rank === "T" ? "10" : card.rank;
-
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={getCardAssetPath(card)}
-      alt={`${assetRank} ${SUIT_LABELS[card.suit]}`}
-      className="community-card-face-img"
-      width={242}
-      height={340}
-      loading="eager"
-      decoding="sync"
-      draggable={false}
-      aria-hidden
-    />
-  );
-}
 
 export function CommunityCardSlot({
   mode,
@@ -44,12 +25,10 @@ export function CommunityCardSlot({
     }
 
     let cancelled = false;
-    void preloadCardImage(card).then(() => {
-      if (cancelled) return;
+    // Double rAF so the back face paints before the flip transition starts.
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (!cancelled) setFlipReady(true);
-        });
+        if (!cancelled) setFlipReady(true);
       });
     });
 
@@ -59,12 +38,7 @@ export function CommunityCardSlot({
   }, [mode, card]);
 
   if (mode === "empty") {
-    return (
-      <div
-        className="playing-card community-card-empty"
-        aria-hidden
-      />
-    );
+    return <div className="playing-card community-card-empty" aria-hidden />;
   }
 
   const useFlip = slotIndex < 3 || !!card;
@@ -85,7 +59,10 @@ export function CommunityCardSlot({
         </div>
         <div className="card-flip-face card-flip-front">
           {card ? (
-            <CommunityCardFace card={card} />
+            <CardFaceSvg
+              card={card}
+              className="playing-card community-card-face-svg"
+            />
           ) : (
             <CardBack sizeClass="playing-card community-card-fill" animate={false} />
           )}
