@@ -1,8 +1,14 @@
+"use client";
+
+import { useId } from "react";
 import type { Card, Rank, Suit } from "@/lib/types";
+import { animalStandeeSrc } from "@/lib/animal-display";
 import {
+  FACE_CARD_ANIMAL,
   SUIT_COLORS,
   SUIT_LABELS,
   SUIT_PATHS,
+  faceCardAnimal,
   isFaceRank,
   pipLayout,
   rankLabel,
@@ -74,50 +80,63 @@ function CornerIndex({
   );
 }
 
-function FaceArt({ rank, suit }: { rank: Rank; suit: Suit }) {
+function CourtPortrait({
+  rank,
+  suit,
+  clipId,
+}: {
+  rank: "J" | "Q" | "K";
+  suit: Suit;
+  clipId: string;
+}) {
+  const animal = FACE_CARD_ANIMAL[rank];
+  const src = animalStandeeSrc(animal);
   const color = SUIT_COLORS[suit];
-  const accent = suit === "h" || suit === "d" ? "#f0a0a4" : "#c8c8c8";
-  const half = (
-    <g>
-      <rect
-        x={68}
-        y={72}
-        width={106}
-        height={98}
-        rx={10}
-        fill={accent}
-        stroke={color}
-        strokeWidth={3}
-      />
-      <SuitGlyph suit={suit} x={121} y={108} size={36} />
-      <text
-        x={121}
-        y={148}
-        fill={color}
-        fontSize={44}
-        fontWeight={900}
-        fontFamily='ui-sans-serif, system-ui, "Segoe UI", sans-serif'
-        textAnchor="middle"
-        dominantBaseline="middle"
-      >
-        {rankLabel(rank)}
-      </text>
-    </g>
-  );
+
+  // Panel between corner indices; slice + zoom crops standee leather borders.
+  const panelX = 54;
+  const panelY = 62;
+  const panelW = 134;
+  const panelH = 216;
 
   return (
     <g>
-      {half}
-      <g transform={`translate(${VB_W} ${VB_H}) rotate(180)`}>{half}</g>
-      <line
-        x1={78}
-        y1={170}
-        x2={164}
-        y2={170}
+      <defs>
+        <clipPath id={clipId}>
+          <rect
+            x={panelX}
+            y={panelY}
+            width={panelW}
+            height={panelH}
+            rx={12}
+            ry={12}
+          />
+        </clipPath>
+      </defs>
+      <rect
+        x={panelX - 3}
+        y={panelY - 3}
+        width={panelW + 6}
+        height={panelH + 6}
+        rx={14}
+        ry={14}
+        fill="#fff8ee"
         stroke={color}
-        strokeWidth={2}
-        opacity={0.35}
+        strokeWidth={3}
       />
+      {src ? (
+        <image
+          href={src}
+          x={panelX - 28}
+          y={panelY - 20}
+          width={panelW + 56}
+          height={panelH + 50}
+          preserveAspectRatio="xMidYMid slice"
+          clipPath={`url(#${clipId})`}
+        />
+      ) : null}
+      <SuitGlyph suit={suit} x={70} y={80} size={16} />
+      <SuitGlyph suit={suit} x={172} y={258} size={16} flip />
     </g>
   );
 }
@@ -131,8 +150,10 @@ export function CardFaceSvg({
   className?: string;
   dealDelay?: number;
 }) {
+  const clipId = useId().replace(/:/g, "");
   const label = `${rankLabel(card.rank)} ${SUIT_LABELS[card.suit]}`;
   const pips = isFaceRank(card.rank) ? [] : pipLayout(card.rank);
+  const animal = faceCardAnimal(card.rank);
 
   return (
     <svg
@@ -141,7 +162,11 @@ export function CardFaceSvg({
       width={VB_W}
       height={VB_H}
       role="img"
-      aria-label={label}
+      aria-label={
+        animal
+          ? `${label}（${animal === "cat" ? "猫" : animal === "rabbit" ? "兔" : "狐"}）`
+          : label
+      }
       style={dealDelay ? { animationDelay: `${dealDelay}ms` } : undefined}
     >
       <rect
@@ -163,8 +188,12 @@ export function CardFaceSvg({
         y={VB_H - 18}
         flip
       />
-      {isFaceRank(card.rank) ? (
-        <FaceArt rank={card.rank} suit={card.suit} />
+      {card.rank === "J" || card.rank === "Q" || card.rank === "K" ? (
+        <CourtPortrait
+          rank={card.rank}
+          suit={card.suit}
+          clipId={`court-${clipId}`}
+        />
       ) : (
         pips.map((pip, index) => (
           <SuitGlyph

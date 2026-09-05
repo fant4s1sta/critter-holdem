@@ -1,4 +1,4 @@
-import type { Card, Rank, Suit } from "./types";
+import type { AnimalId, Card, Rank, Suit } from "./types";
 
 export const SUIT_LABELS: Record<Suit, string> = {
   s: "黑桃",
@@ -36,12 +36,56 @@ export function preloadAllCardImages(): Promise<void> {
   return Promise.resolve();
 }
 
-/** Suit glyph paths in a 0..100 viewBox, tip facing down for hearts/spades. */
+/**
+ * Suit glyph paths in a 0..100 viewBox.
+ * Spade tip points up; heart tip points down; diamond is a tall rhombus;
+ * club is three lobes + flared stem — matched to a standard suit reference.
+ */
 export const SUIT_PATHS: Record<Suit, string> = {
-  s: "M50 6C42 22 18 34 18 54c0 12 9 20 20 20 5 0 9-2 12-5 3 3 7 5 12 5 11 0 20-8 20-20 0-20-24-32-32-48zM40 74c1 8 2 16 2 20h16c0-4 1-12 2-20H40z",
-  h: "M50 92C50 92 10 64 10 38 10 22 22 12 36 12c8 0 14 4 14 10 0-6 6-10 14-10 14 0 26 10 26 26 0 26-40 54-40 54z",
-  d: "M50 8L86 50 50 92 14 50z",
-  c: "M50 28c-10 0-18 8-18 18 0 7 4 13 10 16-8 3-14 10-14 18h24c0-4 2-8 6-10v24h8V70c4 2 6 6 6 10h24c0-8-6-15-14-18 6-3 10-9 10-16 0-10-8-18-18-18-4 0-8 1-11 4-3-3-7-4-11-4z",
+  s: [
+    "M50 4",
+    "C28 28 8 42 8 62",
+    "C8 78 22 90 38 90",
+    "C44 90 48 86 50 80",
+    "C52 86 56 90 62 90",
+    "C78 90 92 78 92 62",
+    "C92 42 72 28 50 4Z",
+    "M43 86",
+    "C45 94 47 100 50 100",
+    "C53 100 55 94 57 86",
+    "C53 90 47 90 43 86Z",
+  ].join(""),
+  h: [
+    "M50 96",
+    "C22 72 4 54 4 34",
+    "C4 16 18 4 34 4",
+    "C42 4 48 8 50 14",
+    "C52 8 58 4 66 4",
+    "C82 4 96 16 96 34",
+    "C96 54 78 72 50 96Z",
+  ].join(""),
+  d: "M50 2L90 50 50 98 10 50Z",
+  c: [
+    "M50 12",
+    "C38 12 28 22 28 34",
+    "C28 46 38 56 50 56",
+    "C62 56 72 46 72 34",
+    "C72 22 62 12 50 12Z",
+    "M28 40",
+    "C16 40 6 50 6 62",
+    "C6 74 16 84 28 84",
+    "C40 84 50 74 50 62",
+    "C50 50 40 40 28 40Z",
+    "M72 40",
+    "C60 40 50 50 50 62",
+    "C50 74 60 84 72 84",
+    "C84 84 94 74 94 62",
+    "C94 50 84 40 72 40Z",
+    "M43 78",
+    "C45 88 47 98 50 100",
+    "C53 98 55 88 57 78",
+    "C53 84 47 84 43 78Z",
+  ].join(""),
 };
 
 export type Pip = { x: number; y: number; flip?: boolean; scale?: number };
@@ -151,4 +195,18 @@ export function pipLayout(rank: Rank): Pip[] {
 
 export function isFaceRank(rank: Rank): boolean {
   return rank === "J" || rank === "Q" || rank === "K";
+}
+
+/** Court-card animal portraits: J=cat, Q=rabbit, K=fox. */
+export const FACE_CARD_ANIMAL: Record<"J" | "Q" | "K", AnimalId> = {
+  J: "cat",
+  Q: "rabbit",
+  K: "fox",
+};
+
+export function faceCardAnimal(rank: Rank): AnimalId | null {
+  if (rank === "J" || rank === "Q" || rank === "K") {
+    return FACE_CARD_ANIMAL[rank];
+  }
+  return null;
 }

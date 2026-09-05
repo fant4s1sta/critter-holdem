@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import {
+  FACE_CARD_ANIMAL,
   SUIT_COLORS,
   SUIT_LABELS,
   SUIT_PATHS,
+  faceCardAnimal,
   getCardRenderKey,
   isFaceRank,
   pipLayout,
@@ -36,4 +38,9 @@ assert.equal(pipLayout("T").length, 10);
 assert.equal(pipLayout("J").length, 0);
 assert.equal(isFaceRank("Q"), true);
 assert.equal(isFaceRank("9"), false);
+assert.equal(FACE_CARD_ANIMAL.J, "cat");
+assert.equal(FACE_CARD_ANIMAL.Q, "rabbit");
+assert.equal(FACE_CARD_ANIMAL.K, "fox");
+assert.equal(faceCardAnimal("J"), "cat");
+assert.equal(faceCardAnimal("A"), null);
 console.log("card visual tests passed");
