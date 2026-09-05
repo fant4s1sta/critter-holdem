@@ -1,6 +1,11 @@
 import {
+  BOOT_ASSET_SRCS,
+  BOOT_PERCENT_ID,
+  BOOT_PROGRESS_FILL_ID,
   BOOT_SPLASH_ID,
   BOOT_SPLASH_STYLE,
+  BOOT_STATUS_ID,
+  buildBootLoaderScript,
 } from "@/lib/boot-splash";
 import {
   BRAND_LOGO_PNG_SRC,
@@ -9,7 +14,8 @@ import {
 
 /**
  * Static first-paint loader embedded in the document HTML.
- * Shows before the JS / CSS bundles arrive; AppShell dismisses it when ready.
+ * Starts asset downloads immediately and shows a live progress bar before
+ * React hydrates; AppShell dismisses it once home is ready.
  */
 export function BootSplash() {
   return (
@@ -17,10 +23,12 @@ export function BootSplash() {
       <style dangerouslySetInnerHTML={{ __html: BOOT_SPLASH_STYLE }} />
       <div
         id={BOOT_SPLASH_ID}
-        role="status"
-        aria-live="polite"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={0}
         aria-busy="true"
-        aria-label="加载中"
+        aria-label="资源加载中"
       >
         <div className="boot-splash-inner">
           <div className="boot-splash-spinner" aria-hidden>
@@ -38,9 +46,26 @@ export function BootSplash() {
               />
             </picture>
           </div>
-          <p className="boot-splash-label">加载中</p>
+          <p className="boot-splash-title">萌兽德扑</p>
+          <p id={BOOT_STATUS_ID} className="boot-splash-status">
+            正在准备资源
+          </p>
+          <div className="boot-splash-track" aria-hidden>
+            <span
+              id={BOOT_PROGRESS_FILL_ID}
+              className="boot-splash-fill"
+            />
+          </div>
+          <p id={BOOT_PERCENT_ID} className="boot-splash-percent">
+            0%
+          </p>
         </div>
       </div>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: buildBootLoaderScript(BOOT_ASSET_SRCS),
+        }}
+      />
     </>
   );
 }

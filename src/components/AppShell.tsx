@@ -14,9 +14,11 @@ import {
   type RoomResumeOffer,
 } from "@/lib/session";
 import { getSocket } from "@/lib/socket";
-import { preloadAllAnimalAvatars, preloadAllAnimalStandees } from "@/lib/animal-display";
-import { dismissBootSplash } from "@/lib/boot-splash";
-import { preloadCriticalImages } from "@/lib/critical-images";
+import {
+  dismissBootSplash,
+  preloadBootAssetsWithProgress,
+  waitForBootAssets,
+} from "@/lib/boot-splash";
 import type { RoomPublicState, RuleMode } from "@/lib/types";
 
 export function AppShell() {
@@ -29,11 +31,26 @@ export function AppShell() {
   const homeShellRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    void Promise.all([
-      preloadCriticalImages(),
-      preloadAllAnimalAvatars(),
-      preloadAllAnimalStandees(),
-    ]).then(() => setAssetsReady(true));
+    let cancelled = false;
+    let settled = false;
+
+    const finish = () => {
+      if (cancelled || settled) return;
+      settled = true;
+      setAssetsReady(true);
+    };
+
+    // Prefer the early HTML inline loader; fall back if it never signals.
+    void waitForBootAssets().then(finish);
+    const timer = window.setTimeout(() => {
+      if (window.__BOOT_ASSETS_READY__) return;
+      void preloadBootAssetsWithProgress().then(finish);
+    }, 160);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, []);
 
   useLayoutEffect(() => {
@@ -153,8 +170,9 @@ export function AppShell() {
     replaceRoomUrl(null);
   }
 
+  // Keep the HTML boot splash visible — avoid a second React loader flash.
   if (!ready || !assetsReady) {
-    return <FullScreenLoader label="加载中" />;
+    return null;
   }
 
   if (roomCode) {
