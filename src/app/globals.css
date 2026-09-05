@@ -817,12 +817,12 @@ body {
   width: 100%;
   height: 100%;
   place-items: center;
-  /* Keep shadow geometry identical across states — only the glow toggles.
-     Changing offset/blur on select caused a 1px border-size shimmer. */
+  /* Filter must stay identical across selected/focus states.
+     Toggling drop-shadow forces a re-rasterize of the whole chip and
+     reads as border-size jitter when switching animals. */
   filter:
     drop-shadow(0 1px 0 #5a2208)
     drop-shadow(0 3px 2px rgba(42, 12, 4, 0.4));
-  transition: filter 120ms ease;
 }
 
 .lobby-chip-svg {
@@ -862,16 +862,15 @@ body {
   transition: none;
 }
 
+/* Focus ring on the cell — never touch .lobby-chip filter (re-rasterize = jitter). */
 .lobby-animal-cell:focus-visible {
-  outline: none;
+  outline: 2px solid #ffd45c;
+  outline-offset: 2px;
 }
 
-.lobby-animal-cell:focus-visible .lobby-chip,
 .lobby-animal-cell.is-selected .lobby-chip {
-  filter:
-    drop-shadow(0 0 5px rgba(255, 196, 90, 0.7))
-    drop-shadow(0 1px 0 #5a2208)
-    drop-shadow(0 3px 2px rgba(42, 12, 4, 0.4));
+  /* Stable compositor layer; no filter/transform change on select. */
+  z-index: 1;
 }
 
 .lobby-skill-blurb {

@@ -119,9 +119,12 @@ export function SkillRoomClient({
   }, [onLeaveHome, roomCode]);
 
   useEffect(() => {
+    // Lobby has no turn clock; ticking here re-rendered every chip filter
+    // layer 4×/sec and looked like avatar-frame jitter while picking.
+    if (room?.status === "lobby") return;
     const t = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(t);
-  }, []);
+  }, [room?.status]);
 
   useRoomConnection({
     enabled: ready && !!identity,
