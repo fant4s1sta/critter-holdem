@@ -9,7 +9,7 @@ export const SUIT_LABELS: Record<Suit, string> = {
 
 export const SUIT_COLORS: Record<Suit, string> = {
   s: "#1a1a1a",
-  c: "#1f5c3a",
+  c: "#3f8f5a",
   h: "#d2202a",
   d: "#e8781a",
 };

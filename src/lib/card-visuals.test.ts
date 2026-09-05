@@ -22,7 +22,7 @@ assert.equal(rankLabel("A"), "A");
 assert.equal(SUIT_COLORS.h, "#d2202a");
 assert.equal(SUIT_COLORS.d, "#e8781a");
 assert.equal(SUIT_COLORS.s, "#1a1a1a");
-assert.equal(SUIT_COLORS.c, "#1f5c3a");
+assert.equal(SUIT_COLORS.c, "#3f8f5a");
 assert.notEqual(SUIT_COLORS.h, SUIT_COLORS.d);
 assert.notEqual(SUIT_COLORS.s, SUIT_COLORS.c);
 assert.ok(SUIT_PATHS.s.length > 10);
