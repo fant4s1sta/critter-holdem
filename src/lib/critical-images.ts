@@ -5,7 +5,7 @@ export const BRAND_LOGO_PNG_SRC = "/brand-logo.png";
 export const CASINO_BACKGROUND_SRC = "/casino-background.jpg";
 export const POKER_TABLE_REFERENCE_SRC = "/poker-table-reference.webp";
 
-/** Home-critical art only. Poker table loads when a room mounts. */
+/** Brand + home background. Poker table is also in BOOT_ASSET_SRCS. */
 export const CRITICAL_IMAGE_SRCS = [
   BRAND_LOGO_WEBP_SRC,
   CASINO_BACKGROUND_SRC,

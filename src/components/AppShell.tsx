@@ -17,6 +17,7 @@ import { getSocket } from "@/lib/socket";
 import {
   dismissBootSplash,
   preloadBootAssetsWithProgress,
+  syncBootAssetRegistry,
   waitForBootAssets,
 } from "@/lib/boot-splash";
 import type { RoomPublicState, RuleMode } from "@/lib/types";
@@ -41,7 +42,10 @@ export function AppShell() {
     };
 
     // Prefer the early HTML inline loader; fall back if it never signals.
-    void waitForBootAssets().then(finish);
+    // Always sync the React preload registry so avatars/standees/table paint immediately.
+    void waitForBootAssets()
+      .then(() => syncBootAssetRegistry())
+      .then(finish);
     const timer = window.setTimeout(() => {
       if (window.__BOOT_ASSETS_READY__) return;
       void preloadBootAssetsWithProgress().then(finish);

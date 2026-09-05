@@ -2,10 +2,14 @@ import {
   AI_ASSISTANT_SRC,
   ANIMAL_AVATAR_SRCS,
   ANIMAL_STANDEE_SRCS,
+  SKILL_ITEM_SRC,
+  markImageLoaded,
+  preloadImage,
 } from "./animal-display";
 import {
   BRAND_LOGO_WEBP_SRC,
   CASINO_BACKGROUND_SRC,
+  POKER_TABLE_REFERENCE_SRC,
 } from "./critical-images";
 
 /** First-paint boot splash: visible before React / CSS bundle arrive. */
@@ -15,17 +19,19 @@ export const BOOT_PROGRESS_FILL_ID = "boot-splash-progress-fill";
 export const BOOT_PERCENT_ID = "boot-splash-percent";
 export const BOOT_STATUS_ID = "boot-splash-status";
 
-/** Home-first boot assets. Room-only art (poker table) loads later. */
+/**
+ * All gameplay-critical images. Boot splash stays up until every entry is
+ * loaded — no soft timeout — so pages never paint with blank art.
+ */
 export const BOOT_ASSET_SRCS: readonly string[] = [
   BRAND_LOGO_WEBP_SRC,
   CASINO_BACKGROUND_SRC,
   AI_ASSISTANT_SRC,
+  POKER_TABLE_REFERENCE_SRC,
+  SKILL_ITEM_SRC,
   ...ANIMAL_AVATAR_SRCS,
   ...ANIMAL_STANDEE_SRCS,
 ];
-
-/** Soft timeout so one hung request cannot block the splash forever. */
-export const BOOT_ASSET_TIMEOUT_MS = 8000;
 
 declare global {
   interface Window {
@@ -109,19 +115,15 @@ html,body{background:#120e0a;margin:0;}
 
 /**
  * Inline boot script: starts asset fetch before React hydrates and paints
- * progress onto the splash DOM. Each asset has a timeout so a single hung
- * request cannot freeze the splash at n-1.
+ * progress onto the splash DOM. Waits for every asset's load/error — no
+ * timeout — so the app never opens with missing art.
  */
-export function buildBootLoaderScript(
-  srcs: readonly string[],
-  timeoutMs: number = BOOT_ASSET_TIMEOUT_MS,
-): string {
+export function buildBootLoaderScript(srcs: readonly string[]): string {
   return `(function(){
 var srcs=${JSON.stringify(srcs)};
 var total=srcs.length||1;
 var done=0;
 var finished=false;
-var timeoutMs=${JSON.stringify(timeoutMs)};
 function paint(){
   var p=Math.min(100,Math.round(done/total*100));
   window.__BOOT_ASSETS_PROGRESS__=p;
@@ -161,7 +163,6 @@ for(var i=0;i<srcs.length;i++){
     img.onerror=settle;
     img.decoding="async";
     img.src=src;
-    setTimeout(settle, timeoutMs);
   })(srcs[i]);
 }
 if(!srcs.length)finish();
@@ -196,6 +197,14 @@ export function updateBootSplashProgress(loaded: number, total: number) {
   }
 }
 
+/** Mark boot assets as ready in the React preload registry (browser cache hit). */
+export async function syncBootAssetRegistry(
+  srcs: readonly string[] = BOOT_ASSET_SRCS,
+): Promise<void> {
+  await Promise.all(srcs.map((src) => preloadImage(src)));
+  for (const src of srcs) markImageLoaded(src);
+}
+
 /** Resolves when the inline boot loader (or React fallback) finishes assets. */
 export function waitForBootAssets(): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
@@ -216,15 +225,16 @@ export function waitForBootAssets(): Promise<void> {
 
 /**
  * React-side fallback preload with the same progress UI, in case the inline
- * script was blocked or the list changed after deploy.
+ * script was blocked or the list changed after deploy. No timeout — waits
+ * for every asset to load or error.
  */
 export async function preloadBootAssetsWithProgress(
   srcs: readonly string[] = BOOT_ASSET_SRCS,
-  timeoutMs: number = BOOT_ASSET_TIMEOUT_MS,
 ): Promise<void> {
   if (typeof window === "undefined") return;
   if (window.__BOOT_ASSETS_READY__) {
     updateBootSplashProgress(srcs.length, srcs.length);
+    await syncBootAssetRegistry(srcs);
     return;
   }
 
@@ -233,25 +243,11 @@ export async function preloadBootAssetsWithProgress(
   updateBootSplashProgress(0, total);
 
   await Promise.all(
-    srcs.map(
-      (src) =>
-        new Promise<void>((resolve) => {
-          let settled = false;
-          const done = () => {
-            if (settled) return;
-            settled = true;
-            loaded += 1;
-            updateBootSplashProgress(loaded, total);
-            resolve();
-          };
-          const image = new Image();
-          image.onload = done;
-          image.onerror = done;
-          image.src = src;
-          window.setTimeout(done, timeoutMs);
-          if (image.complete && image.naturalWidth > 0) done();
-        }),
-    ),
+    srcs.map(async (src) => {
+      await preloadImage(src);
+      loaded += 1;
+      updateBootSplashProgress(loaded, total);
+    }),
   );
 
   window.__BOOT_ASSETS_READY__ = true;
