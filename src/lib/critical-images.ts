@@ -3,12 +3,12 @@ import { isImagePreloaded, preloadImage } from "./animal-display";
 export const BRAND_LOGO_WEBP_SRC = "/brand-logo.webp";
 export const BRAND_LOGO_PNG_SRC = "/brand-logo.png";
 export const CASINO_BACKGROUND_SRC = "/casino-background.jpg";
-export const POKER_TABLE_REFERENCE_SRC = "/poker-table-reference.png";
+export const POKER_TABLE_REFERENCE_SRC = "/poker-table-reference.webp";
 
+/** Home-critical art only. Poker table loads when a room mounts. */
 export const CRITICAL_IMAGE_SRCS = [
   BRAND_LOGO_WEBP_SRC,
   CASINO_BACKGROUND_SRC,
-  POKER_TABLE_REFERENCE_SRC,
 ] as const;
 
 export function preloadBrandLogo(): Promise<void> {
