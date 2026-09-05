@@ -2083,28 +2083,6 @@ svg.playing-card {
   background: #fff8ee;
 }
 
-.invite-qr-logo {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 44px;
-  padding: 4px;
-  border: 2px solid #c45e1c;
-  border-radius: 0.45rem;
-  background: #fff8ee;
-  box-shadow: 0 2px 0 rgba(90, 34, 12, 0.3);
-  transform: translate(-50%, -50%);
-}
-
-.invite-qr-logo .brand-logo {
-  width: 100%;
-  height: auto;
-  opacity: 1;
-}
-
 .invite-qr-placeholder {
   display: grid;
   place-items: center;
