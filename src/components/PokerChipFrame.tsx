@@ -56,6 +56,8 @@ export function PokerChipFrame({
         transform="rotate(-6.2 50 50)"
       />
 
+      {/* Selection only restyles the inner gold rim (same radius + width)
+          so the chip outer diameter never changes. */}
       <circle
         cx="50"
         cy="50"
@@ -65,16 +67,6 @@ export function PokerChipFrame({
         strokeWidth="2.1"
       />
       <circle cx="50" cy="50" r="36.6" fill="none" stroke="#6b2a0c" strokeWidth="0.9" />
-      {selected ? (
-        <circle
-          cx="50"
-          cy="50"
-          r="49.4"
-          fill="none"
-          stroke={`url(#${rim})`}
-          strokeWidth="1.8"
-        />
-      ) : null}
     </svg>
   );
 }
