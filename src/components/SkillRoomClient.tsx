@@ -19,9 +19,11 @@ import { getSocket } from "@/lib/socket";
 import { useRoomConnection } from "@/lib/use-room-connection";
 import { useAvatarSelection } from "@/lib/use-avatar-selection";
 import { useAddBot } from "@/lib/use-add-bot";
+import { useTableEmotes } from "@/lib/use-table-emotes";
 import { getSeatLayout, seatBadgeForSeat } from "@/lib/seat-layout";
 import { CommunityCards } from "./CommunityCards";
 import { DealerSpeech } from "./DealerSpeech";
+import { EmotePicker, SeatEmoteBubble } from "./EmotePicker";
 import { PlayingCard } from "./PlayingCard";
 import { PotPlaque } from "./PotPlaque";
 import { FullScreenLoader } from "./FullScreenLoader";
@@ -125,6 +127,13 @@ export function SkillRoomClient({
     const t = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(t);
   }, [room?.status]);
+
+  const { bubbles, sendEmote, coolingDown } = useTableEmotes({
+    enabled: ready && !!identity,
+    roomCode,
+    identity,
+    onError: onRoomError,
+  });
 
   useRoomConnection({
     enabled: ready && !!identity,
@@ -379,6 +388,7 @@ export function SkillRoomClient({
             )
           }
           seats={seatLayout.map(({ player, x, y }) => {
+            const emote = bubbles[player.id];
             if (inLobby) {
               return (
                 <div
@@ -388,6 +398,9 @@ export function SkillRoomClient({
                 >
                   <div className="relative flex flex-col items-center">
                     <div className="relative">
+                      {emote ? (
+                        <SeatEmoteBubble emoji={emote.emoji} at={emote.at} />
+                      ) : null}
                       <div
                         className={`px-seat-avatar${
                           player.id === me?.id ? " px-seat-active" : ""
@@ -427,6 +440,9 @@ export function SkillRoomClient({
               >
                 <div className="relative flex flex-col items-center">
                   <div className="relative">
+                    {emote ? (
+                      <SeatEmoteBubble emoji={emote.emoji} at={emote.at} />
+                    ) : null}
                     <div
                       className={`px-seat-avatar ${
                         isActing ? "px-seat-active" : ""
@@ -594,7 +610,12 @@ export function SkillRoomClient({
                     你已离线，AI 正在代打。保持此页打开即可收回控制权。
                   </p>
                 ) : (
-                  <div className="game-action-panel space-y-2 p-2.5">
+                  <div className="game-action-with-emote">
+                    <EmotePicker
+                      coolingDown={coolingDown}
+                      onSend={sendEmote}
+                    />
+                    <div className="game-action-panel space-y-2 p-2.5">
                     <label className="game-range-label">
                       <span>下注 {raiseTo}</span>
                       <input
@@ -662,6 +683,7 @@ export function SkillRoomClient({
                     >
                       全下 {room.you?.maxRaiseTo ?? 0}
                     </button>
+                    </div>
                   </div>
                 )}
               </div>

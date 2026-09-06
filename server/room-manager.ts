@@ -597,6 +597,14 @@ export class RoomManager {
     return !!spectator && spectator.secret === secret;
   }
 
+  /** Seated (non-spectator) player auth — used by side-channel events like emotes. */
+  assertSeatedPlayer(code: string, playerId: string, secret: string) {
+    const room = this.requireRoom(code);
+    const player = room.players.get(playerId);
+    if (!player || player.secret !== secret) throw new Error("无权操作");
+    return player;
+  }
+
   leaveRoom(code: string, playerId: string, secret: string) {
     const room = this.rooms.get(code.toUpperCase());
     if (!room) return;
