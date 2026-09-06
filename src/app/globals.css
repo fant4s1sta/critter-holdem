@@ -2420,3 +2420,9 @@ svg.playing-card {
     transform: rotate(0deg);
   }
 }
+
+
+
+.lobby-table-shell.is-game .table-play {
+  overflow: visible;
+}

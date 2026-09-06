@@ -71,9 +71,8 @@ export function useTableEmotes(opts: {
     socket.on("player_emote", onPlayerEmote);
     return () => {
       socket.off("player_emote", onPlayerEmote);
-      for (const timer of timersRef.current.values()) clearTimeout(timer);
-      timersRef.current.clear();
-      setBubbles({});
+      // Do not clear bubbles here — StrictMode/effect refresh would wipe
+      // an in-flight optimistic bubble before paint.
     };
   }, [enabled, roomCode]);
 
@@ -83,10 +82,37 @@ export function useTableEmotes(opts: {
     };
   }, []);
 
+  const showBubble = useCallback((playerId: string, emoteId: EmoteId, emoji: string, at: number) => {
+    setBubbles((prev) => ({
+      ...prev,
+      [playerId]: { playerId, emoji, emoteId, at },
+    }));
+    const existing = timersRef.current.get(playerId);
+    if (existing) clearTimeout(existing);
+    const timer = setTimeout(() => {
+      setBubbles((prev) => {
+        const current = prev[playerId];
+        if (!current || current.at !== at) return prev;
+        const next = { ...prev };
+        delete next[playerId];
+        return next;
+      });
+      timersRef.current.delete(playerId);
+    }, EMOTE_DISPLAY_MS);
+    timersRef.current.set(playerId, timer);
+  }, []);
+
   const sendEmote = useCallback(
     (emoteId: EmoteId) => {
       if (!identity) return;
       if (Date.now() < cooldownUntil) return;
+
+      const emoji = emojiForEmoteId(emoteId);
+      if (!emoji) return;
+
+      // Show immediately for the sender (do not wait for ack / broadcast).
+      const at = Date.now();
+      showBubble(identity.playerId, emoteId, emoji, at);
 
       const socket = getSocket();
       socket.emit(
@@ -110,34 +136,10 @@ export function useTableEmotes(opts: {
             setCoolingDown(false);
             cooldownTimerRef.current = null;
           }, EMOTE_COOLDOWN_MS);
-
-          // Optimistic local bubble — sender sees it even if room broadcast is delayed.
-          const emoji = emojiForEmoteId(emoteId);
-          if (emoji) {
-            const at = Date.now();
-            const playerId = identity.playerId;
-            setBubbles((prev) => ({
-              ...prev,
-              [playerId]: { playerId, emoji, emoteId, at },
-            }));
-            const existing = timersRef.current.get(playerId);
-            if (existing) clearTimeout(existing);
-            const timer = setTimeout(() => {
-              setBubbles((prev) => {
-                const current = prev[playerId];
-                if (!current || current.at !== at) return prev;
-                const next = { ...prev };
-                delete next[playerId];
-                return next;
-              });
-              timersRef.current.delete(playerId);
-            }, EMOTE_DISPLAY_MS);
-            timersRef.current.set(playerId, timer);
-          }
         },
       );
     },
-    [cooldownUntil, identity, onError, roomCode],
+    [cooldownUntil, identity, onError, roomCode, showBubble],
   );
 
   return {

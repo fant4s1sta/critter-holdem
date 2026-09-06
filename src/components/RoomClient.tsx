@@ -123,6 +123,7 @@ export function RoomClient({
     onError: onRoomError,
   });
 
+
   useRoomConnection({
     enabled: ready && !!identity,
     roomCode,
