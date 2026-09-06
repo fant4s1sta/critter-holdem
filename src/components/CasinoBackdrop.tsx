@@ -7,8 +7,8 @@ export function CasinoBackdrop() {
       <Image
         src={CASINO_BACKGROUND_SRC}
         alt=""
-        width={1535}
-        height={1413}
+        width={1100}
+        height={1013}
         priority
         unoptimized
         sizes="100vw"

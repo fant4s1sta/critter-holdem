@@ -174,9 +174,10 @@ export function AppShell() {
     replaceRoomUrl(null);
   }
 
-  // Keep the HTML boot splash visible — avoid a second React loader flash.
+  // Keep HTML BootSplash on top; React still paints a dark loader underneath
+  // so a missed/dismissed splash can never flash a blank stage.
   if (!ready || !assetsReady) {
-    return null;
+    return <FullScreenLoader label="加载资源中" />;
   }
 
   if (roomCode) {

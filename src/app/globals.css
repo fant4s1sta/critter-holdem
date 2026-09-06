@@ -1727,6 +1727,7 @@ svg.playing-card {
   justify-content: center;
   min-height: var(--stage-h);
   overflow: hidden;
+  background: #120e0a;
 }
 
 .fullscreen-loader.room-shell {

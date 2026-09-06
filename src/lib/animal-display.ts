@@ -62,7 +62,7 @@ export function animalAvatarScale(id: AnimalId | null | undefined): number {
 }
 
 export const AI_ASSISTANT_SRC = "/ai-assistant.webp";
-export const SKILL_ITEM_SRC = "/skill-item.png";
+export const SKILL_ITEM_SRC = "/skill-item.webp";
 
 const preloadCache = new Map<string, Promise<void>>();
 const loadedSrcs = new Set<string>();

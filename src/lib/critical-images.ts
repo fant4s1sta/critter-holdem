@@ -2,7 +2,7 @@ import { isImagePreloaded, preloadImage } from "./animal-display";
 
 export const BRAND_LOGO_WEBP_SRC = "/brand-logo.webp";
 export const BRAND_LOGO_PNG_SRC = "/brand-logo.png";
-export const CASINO_BACKGROUND_SRC = "/casino-background.jpg";
+export const CASINO_BACKGROUND_SRC = "/casino-background.webp";
 export const POKER_TABLE_REFERENCE_SRC = "/poker-table-reference.webp";
 
 /** Brand + home background. Poker table is also in BOOT_ASSET_SRCS. */

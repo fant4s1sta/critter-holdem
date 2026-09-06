@@ -115,8 +115,8 @@ html,body{background:#120e0a;margin:0;}
 
 /**
  * Inline boot script: starts asset fetch before React hydrates and paints
- * progress onto the splash DOM. Waits for every asset's load/error — no
- * timeout — so the app never opens with missing art.
+ * progress onto the splash DOM. Retries failed URLs a few times, then settles
+ * — no wall-clock timeout — so the app never opens with missing art.
  */
 export function buildBootLoaderScript(srcs: readonly string[]): string {
   return `(function(){
@@ -124,6 +124,7 @@ var srcs=${JSON.stringify(srcs)};
 var total=srcs.length||1;
 var done=0;
 var finished=false;
+var maxAttempts=3;
 function paint(){
   var p=Math.min(100,Math.round(done/total*100));
   window.__BOOT_ASSETS_PROGRESS__=p;
@@ -153,16 +154,27 @@ paint();
 for(var i=0;i<srcs.length;i++){
   (function(src){
     var settled=false;
+    var attempts=0;
     function settle(){
       if(settled)return;
       settled=true;
       one();
     }
-    var img=new Image();
-    img.onload=settle;
-    img.onerror=settle;
-    img.decoding="async";
-    img.src=src;
+    function load(){
+      attempts+=1;
+      var img=new Image();
+      img.onload=settle;
+      img.onerror=function(){
+        if(attempts<maxAttempts){
+          setTimeout(load, 120*attempts);
+          return;
+        }
+        settle();
+      };
+      img.decoding="async";
+      img.src=src+(attempts>1?((src.indexOf("?")>=0?"&":"?")+"retry="+attempts):"");
+    }
+    load();
   })(srcs[i]);
 }
 if(!srcs.length)finish();
@@ -173,10 +185,17 @@ export function dismissBootSplash() {
   if (typeof document === "undefined") return;
   const el = document.getElementById(BOOT_SPLASH_ID);
   if (!el || el.getAttribute("data-dismissed") === "true") return;
-  el.setAttribute("data-dismissed", "true");
-  window.setTimeout(() => {
-    el.remove();
-  }, 240);
+  // Wait two frames so the first real screen can paint under the splash
+  // before it fades — avoids a one-frame blank between splash and UI.
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      if (!el.isConnected || el.getAttribute("data-dismissed") === "true") return;
+      el.setAttribute("data-dismissed", "true");
+      window.setTimeout(() => {
+        el.remove();
+      }, 240);
+    });
+  });
 }
 
 export function updateBootSplashProgress(loaded: number, total: number) {
