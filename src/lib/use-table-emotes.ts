@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   EMOTE_COOLDOWN_MS,
   EMOTE_DISPLAY_MS,
+  emojiForEmoteId,
   type EmoteId,
   type PlayerEmoteEvent,
 } from "@/lib/emotes";
@@ -109,6 +110,30 @@ export function useTableEmotes(opts: {
             setCoolingDown(false);
             cooldownTimerRef.current = null;
           }, EMOTE_COOLDOWN_MS);
+
+          // Optimistic local bubble — sender sees it even if room broadcast is delayed.
+          const emoji = emojiForEmoteId(emoteId);
+          if (emoji) {
+            const at = Date.now();
+            const playerId = identity.playerId;
+            setBubbles((prev) => ({
+              ...prev,
+              [playerId]: { playerId, emoji, emoteId, at },
+            }));
+            const existing = timersRef.current.get(playerId);
+            if (existing) clearTimeout(existing);
+            const timer = setTimeout(() => {
+              setBubbles((prev) => {
+                const current = prev[playerId];
+                if (!current || current.at !== at) return prev;
+                const next = { ...prev };
+                delete next[playerId];
+                return next;
+              });
+              timersRef.current.delete(playerId);
+            }, EMOTE_DISPLAY_MS);
+            timersRef.current.set(playerId, timer);
+          }
         },
       );
     },
