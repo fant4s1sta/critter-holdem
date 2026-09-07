@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { TABLE_EMOTES, type EmoteId } from "@/lib/emotes";
 
+/** Click own seat avatar to open the 8-emoji panel. */
 export function EmotePicker({
   disabled,
   coolingDown,
   onSend,
+  children,
 }: {
   disabled?: boolean;
   coolingDown?: boolean;
   onSend: (emoteId: EmoteId) => void;
+  children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -70,15 +73,15 @@ export function EmotePicker({
       ) : null}
       <button
         type="button"
-        className="emote-picker-toggle"
+        className="emote-picker-trigger"
         disabled={disabled}
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
-        aria-label="发送表情"
-        title={coolingDown ? "冷却中" : "表情"}
+        aria-label={coolingDown ? "表情冷却中" : "发送表情"}
+        title={coolingDown ? "冷却中" : "点头像发表情"}
         onClick={() => setOpen((value) => !value)}
       >
-        <span aria-hidden="true">😀</span>
+        {children}
       </button>
     </div>
   );

@@ -401,15 +401,29 @@ export function SkillRoomClient({
                       {emote ? (
                         <SeatEmoteBubble emoji={emote.emoji} at={emote.at} />
                       ) : null}
-                      <div
-                        className={`px-seat-avatar${
-                          player.id === me?.id ? " px-seat-active" : ""
-                        }${player.connected ? "" : " opacity-55"}`}
-                        title={player.name}
-                        aria-label={player.name}
-                      >
-                        <AnimalAvatar id={player.avatarId} size="fill" priority="high" />
-                      </div>
+                      {player.id === me?.id && !room.you?.spectator ? (
+                        <EmotePicker coolingDown={coolingDown} onSend={sendEmote}>
+                          <div
+                            className={`px-seat-avatar${
+                              player.id === me?.id ? " px-seat-active" : ""
+                            }${player.connected ? "" : " opacity-55"}`}
+                            title="点头像发表情"
+                            aria-label="点头像发表情"
+                          >
+                            <AnimalAvatar id={player.avatarId} size="fill" priority="high" />
+                          </div>
+                        </EmotePicker>
+                      ) : (
+                        <div
+                          className={`px-seat-avatar${
+                            player.id === me?.id ? " px-seat-active" : ""
+                          }${player.connected ? "" : " opacity-55"}`}
+                          title={player.name}
+                          aria-label={player.name}
+                        >
+                          <AnimalAvatar id={player.avatarId} size="fill" priority="high" />
+                        </div>
+                      )}
                       {player.isHost ? (
                         <span className="px-seat-blind is-host">房主</span>
                       ) : null}
@@ -443,28 +457,55 @@ export function SkillRoomClient({
                     {emote ? (
                       <SeatEmoteBubble emoji={emote.emoji} at={emote.at} />
                     ) : null}
-                    <div
-                      className={`px-seat-avatar ${
+                    {player.id === me?.id && !room.you?.spectator ? (
+                      <EmotePicker coolingDown={coolingDown} onSend={sendEmote}>
+                        <div
+                          className={`px-seat-avatar ${
                         isActing ? "px-seat-active" : ""
                       } ${
                         winner && room.game?.street === "showdown"
                           ? "px-seat-winner"
                           : ""
                       } ${player.folded ? "opacity-45" : ""}`}
-                      title={player.name}
-                      aria-label={player.name}
-                    >
-                      <AnimalAvatar
-                        id={player.avatarId}
-                        size="fill"
-                        priority="high"
-                        eliminated={
+                          title="点头像发表情"
+                          aria-label="点头像发表情"
+                        >
+                          <AnimalAvatar
+                            id={player.avatarId}
+                            size="fill"
+                            priority="high"
+                            eliminated={
                           player.chips <= 0 &&
                           !player.allIn &&
                           (player.holeCardCount ?? 0) === 0
                         }
-                      />
-                    </div>
+                          />
+                        </div>
+                      </EmotePicker>
+                    ) : (
+                      <div
+                        className={`px-seat-avatar ${
+                        isActing ? "px-seat-active" : ""
+                      } ${
+                        winner && room.game?.street === "showdown"
+                          ? "px-seat-winner"
+                          : ""
+                      } ${player.folded ? "opacity-45" : ""}`}
+                        title={player.name}
+                        aria-label={player.name}
+                      >
+                        <AnimalAvatar
+                          id={player.avatarId}
+                          size="fill"
+                          priority="high"
+                          eliminated={
+                          player.chips <= 0 &&
+                          !player.allIn &&
+                          (player.holeCardCount ?? 0) === 0
+                        }
+                        />
+                      </div>
+                    )}
                     {seatBadge ? (
                       <span
                         className={`px-seat-blind ${seatBadge.tone === "bb" ? "is-bb" : ""}`}
@@ -610,12 +651,7 @@ export function SkillRoomClient({
                     你已离线，AI 正在代打。保持此页打开即可收回控制权。
                   </p>
                 ) : (
-                  <div className="game-action-with-emote">
-                    <EmotePicker
-                      coolingDown={coolingDown}
-                      onSend={sendEmote}
-                    />
-                    <div className="game-action-panel space-y-2 p-2.5">
+                  <div className="game-action-panel space-y-2 p-2.5">
                     <label className="game-range-label">
                       <span>下注 {raiseTo}</span>
                       <input
@@ -683,7 +719,6 @@ export function SkillRoomClient({
                     >
                       全下 {room.you?.maxRaiseTo ?? 0}
                     </button>
-                    </div>
                   </div>
                 )}
               </div>
