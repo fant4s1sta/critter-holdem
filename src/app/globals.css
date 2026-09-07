@@ -535,9 +535,15 @@ body {
 
 .emote-picker {
   position: relative;
-  z-index: 8;
+  z-index: 1;
   display: inline-grid;
   place-items: center;
+  transform-style: preserve-3d;
+}
+
+/* Only lift above blinds/other seats while the panel is open. */
+.emote-picker:has(.emote-picker-panel) {
+  z-index: 20;
 }
 
 .emote-picker-trigger {
@@ -550,6 +556,7 @@ body {
   cursor: pointer;
   line-height: 0;
   -webkit-tap-highlight-color: transparent;
+  transform-style: preserve-3d;
 }
 
 .emote-picker-trigger:disabled {
@@ -1222,12 +1229,17 @@ body {
     0 3px 0 rgba(0, 0, 0, 0.35);
 }
 
+.seat-avatar-stack {
+  transform-style: preserve-3d;
+}
+
 .px-seat-blind {
   position: absolute;
   left: 50%;
   top: -0.42rem;
-  z-index: 3;
-  transform: translateX(-50%);
+  /* Above seat avatar (incl. translateZ chip) and closed emote trigger. */
+  z-index: 12;
+  transform: translateX(-50%) translateZ(40px);
   padding: 0.05rem 0.3rem;
   border-radius: 999px;
   border: 2px solid #8f3c10;

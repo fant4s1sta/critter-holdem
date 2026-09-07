@@ -397,7 +397,7 @@ export function SkillRoomClient({
                   style={{ left: `${x}%`, top: `${y}%` }}
                 >
                   <div className="relative flex flex-col items-center">
-                    <div className="relative">
+                    <div className="relative seat-avatar-stack">
                       {emote ? (
                         <SeatEmoteBubble emoji={emote.emoji} at={emote.at} />
                       ) : null}
@@ -424,10 +424,10 @@ export function SkillRoomClient({
                           <AnimalAvatar id={player.avatarId} size="fill" priority="high" />
                         </div>
                       )}
-                      {player.isHost ? (
-                        <span className="px-seat-blind is-host">房主</span>
-                      ) : null}
                     </div>
+                    {player.isHost ? (
+                      <span className="px-seat-blind is-host">房主</span>
+                    ) : null}
                     <p className="px-seat-name">{player.name}</p>
                     <p className="px-seat-chips lobby-seat-meta">
                       {player.aiControlled
@@ -453,7 +453,7 @@ export function SkillRoomClient({
                 style={{ left: `${x}%`, top: `${y}%` }}
               >
                 <div className="relative flex flex-col items-center">
-                  <div className="relative">
+                  <div className="relative seat-avatar-stack">
                     {emote ? (
                       <SeatEmoteBubble emoji={emote.emoji} at={emote.at} />
                     ) : null}
@@ -506,14 +506,14 @@ export function SkillRoomClient({
                         />
                       </div>
                     )}
-                    {seatBadge ? (
-                      <span
-                        className={`px-seat-blind ${seatBadge.tone === "bb" ? "is-bb" : ""}`}
-                      >
-                        {seatBadge.label}
-                      </span>
-                    ) : null}
                   </div>
+                  {seatBadge ? (
+                    <span
+                      className={`px-seat-blind ${seatBadge.tone === "bb" ? "is-bb" : ""}`}
+                    >
+                      {seatBadge.label}
+                    </span>
+                  ) : null}
                   <p className="px-seat-name">{player.name}</p>
                   <p className="px-seat-chips">{player.chips}</p>
                 </div>
