@@ -541,9 +541,9 @@ body {
   transform-style: preserve-3d;
 }
 
-/* Only lift above blinds/other seats while the panel is open. */
+/* Open picker must win inside this seat; the seat wrapper is lifted separately. */
 .emote-picker:has(.emote-picker-panel) {
-  z-index: 20;
+  z-index: 24;
 }
 
 .emote-picker-trigger {
@@ -583,7 +583,7 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.55),
     0 0 0 2px var(--lobby-rim),
     0 6px 14px rgba(20, 8, 0, 0.28);
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateZ(72px);
   animation: emote-panel-in 160ms ease-out;
 }
 
@@ -640,11 +640,11 @@ body {
 @keyframes emote-panel-in {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(6px) scale(0.96);
+    transform: translateX(-50%) translateZ(72px) translateY(6px) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateX(-50%) translateZ(72px) translateY(0) scale(1);
   }
 }
 
@@ -2064,6 +2064,15 @@ svg.playing-card {
   z-index: 1;
   transform: none;
   transform-style: preserve-3d;
+}
+
+/* Seat z-2 / standee z-3 / dealer speech z-4 otherwise cover the 5×4 panel. */
+.table-play:has(.emote-picker-panel) {
+  z-index: 8;
+}
+
+.table-play .absolute:has(.emote-picker-panel) {
+  z-index: 24;
 }
 
 .table-felt {
