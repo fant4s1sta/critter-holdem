@@ -3,6 +3,7 @@ import {
   ITEM_FLIGHT_MS,
   isTableItemId,
   itemFlightPath,
+  mapViewportRectToElement,
   TABLE_ITEMS,
   tableItemSrc,
 } from "./table-items";
@@ -42,5 +43,16 @@ const long = itemFlightPath(
   { left: 400, top: 0, width: 10, height: 10 },
 );
 assert.equal(long.my < short.my, true);
+
+const mapped = mapViewportRectToElement(
+  { left: 140, top: 280, width: 80, height: 80 },
+  { left: 100, top: 200, width: 880, height: 1600 },
+  440,
+  800,
+);
+assert.equal(mapped.left, 20);
+assert.equal(mapped.top, 40);
+assert.equal(mapped.width, 40);
+assert.equal(mapped.height, 40);
 
 console.log("table item catalog tests passed");

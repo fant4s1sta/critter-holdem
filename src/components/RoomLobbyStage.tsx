@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import type { SeatItemFlight } from "@/lib/table-items";
+import { ItemFlightLayer } from "./ItemFlightLayer";
 import { PokerTableSurface } from "./PokerTableSurface";
 
 export function RoomTableShell({
@@ -8,6 +10,7 @@ export function RoomTableShell({
   tableCenter,
   feltOverlay,
   seats,
+  flights = [],
   footer,
   isLobby,
 }: {
@@ -15,6 +18,7 @@ export function RoomTableShell({
   tableCenter: ReactNode;
   feltOverlay?: ReactNode;
   seats: ReactNode;
+  flights?: readonly SeatItemFlight[];
   footer: ReactNode;
   isLobby: boolean;
 }) {
@@ -34,6 +38,7 @@ export function RoomTableShell({
 
             {feltOverlay}
             {seats}
+            <ItemFlightLayer flights={flights} />
           </div>
         </div>
       </div>

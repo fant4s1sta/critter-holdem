@@ -24,7 +24,6 @@ import { getSeatLayout, emotePickerPlacement, seatBadgeForSeat } from "@/lib/sea
 import { CommunityCards } from "./CommunityCards";
 import { DealerSpeech } from "./DealerSpeech";
 import { SeatSocialStack } from "./SeatSocialStack";
-import { ItemFlightLayer } from "./ItemFlightLayer";
 import { PlayingCard } from "./PlayingCard";
 import { PotPlaque } from "./PotPlaque";
 import { FullScreenLoader } from "./FullScreenLoader";
@@ -357,6 +356,7 @@ export function SkillRoomClient({
       {inLobby || room.status !== "lobby" ? (
         <RoomTableShell
           isLobby={inLobby}
+          flights={flights}
           boardOverlay={
             inLobby ? null : (
               <DealerSpeech
@@ -742,7 +742,6 @@ export function SkillRoomClient({
       {inviteOpen ? (
         <InviteModal roomCode={roomCode} onClose={() => setInviteOpen(false)} />
       ) : null}
-      <ItemFlightLayer flights={flights} />
     </div>
   );
 }

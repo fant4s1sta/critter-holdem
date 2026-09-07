@@ -18,7 +18,6 @@ import { BrandLogo } from "./BrandLogo";
 import { CommunityCards } from "./CommunityCards";
 import { DealerSpeech } from "./DealerSpeech";
 import { SeatSocialStack } from "./SeatSocialStack";
-import { ItemFlightLayer } from "./ItemFlightLayer";
 import { PlayingCard } from "./PlayingCard";
 import { PotPlaque } from "./PotPlaque";
 import { HandResultModal } from "./HandResultModal";
@@ -318,6 +317,7 @@ export function RoomClient({
       {inLobby || room.status !== "lobby" ? (
         <RoomTableShell
           isLobby={inLobby}
+          flights={flights}
           boardOverlay={
             inLobby ? null : (
               <DealerSpeech
@@ -651,7 +651,6 @@ export function RoomClient({
       {inviteOpen ? (
         <InviteModal roomCode={roomCode} onClose={() => setInviteOpen(false)} />
       ) : null}
-      <ItemFlightLayer flights={flights} />
     </div>
   );
 }

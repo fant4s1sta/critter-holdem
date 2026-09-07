@@ -61,6 +61,23 @@ export function itemFlightPath(from: RectLike, to: RectLike): ItemFlightPath {
   };
 }
 
+/** Map a viewport-space rect into an element's unscaled local box. */
+export function mapViewportRectToElement(
+  rect: RectLike,
+  elementRect: RectLike,
+  elementWidth: number,
+  elementHeight: number,
+): RectLike {
+  const sx = elementWidth / elementRect.width;
+  const sy = elementHeight / elementRect.height;
+  return {
+    left: (rect.left - elementRect.left) * sx,
+    top: (rect.top - elementRect.top) * sy,
+    width: rect.width * sx,
+    height: rect.height * sy,
+  };
+}
+
 export type ThrowItemPayload = {
   code: string;
   playerId: string;
