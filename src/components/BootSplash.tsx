@@ -1,11 +1,9 @@
 import {
-  BOOT_ASSET_SRCS,
   BOOT_PERCENT_ID,
   BOOT_PROGRESS_FILL_ID,
   BOOT_SPLASH_ID,
   BOOT_SPLASH_STYLE,
   BOOT_STATUS_ID,
-  buildBootLoaderScript,
 } from "@/lib/boot-splash";
 import {
   BRAND_LOGO_PNG_SRC,
@@ -29,6 +27,7 @@ export function BootSplash() {
         aria-valuenow={0}
         aria-busy="true"
         aria-label="资源加载中"
+        suppressHydrationWarning
       >
         <div className="boot-splash-inner">
           <div className="boot-splash-spinner" aria-hidden>
@@ -47,25 +46,29 @@ export function BootSplash() {
             </picture>
           </div>
           <p className="boot-splash-title">萌兽德扑</p>
-          <p id={BOOT_STATUS_ID} className="boot-splash-status">
+          <p
+            id={BOOT_STATUS_ID}
+            className="boot-splash-status"
+            suppressHydrationWarning
+          >
             正在准备资源
           </p>
           <div className="boot-splash-track" aria-hidden>
             <span
               id={BOOT_PROGRESS_FILL_ID}
               className="boot-splash-fill"
+              suppressHydrationWarning
             />
           </div>
-          <p id={BOOT_PERCENT_ID} className="boot-splash-percent">
+          <p
+            id={BOOT_PERCENT_ID}
+            className="boot-splash-percent"
+            suppressHydrationWarning
+          >
             0%
           </p>
         </div>
       </div>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: buildBootLoaderScript(BOOT_ASSET_SRCS),
-        }}
-      />
     </>
   );
 }

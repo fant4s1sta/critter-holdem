@@ -152,7 +152,8 @@ function one(){
   paint();
   if(done>=total)finish();
 }
-paint();
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",paint);
+else paint();
 for(var i=0;i<srcs.length;i++){
   (function(src){
     var settled=false;
