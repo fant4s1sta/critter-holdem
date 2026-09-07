@@ -12,7 +12,7 @@ import { useRoomConnection } from "@/lib/use-room-connection";
 import { useAvatarSelection } from "@/lib/use-avatar-selection";
 import { useAddBot } from "@/lib/use-add-bot";
 import { useTableEmotes } from "@/lib/use-table-emotes";
-import { getSeatLayout, seatBadgeForSeat } from "@/lib/seat-layout";
+import { getSeatLayout, emotePickerPlacement, seatBadgeForSeat } from "@/lib/seat-layout";
 import { AnimalAvatar } from "./AnimalAvatar";
 import { BrandLogo } from "./BrandLogo";
 import { CommunityCards } from "./CommunityCards";
@@ -347,8 +347,9 @@ export function RoomClient({
               />
             )
           }
-          seats={seatLayout.map(({ player, x, y }) => {
+          seats={seatLayout.map(({ player, x, y, cupIndex }) => {
             const emote = bubbles[player.id];
+            const pickerPlacement = emotePickerPlacement(cupIndex);
             if (inLobby) {
               return (
                 <div
@@ -362,7 +363,11 @@ export function RoomClient({
                         <SeatEmoteBubble emoteId={emote.emoteId} at={emote.at} />
                       ) : null}
                       {player.id === me?.id && !room.you?.spectator ? (
-                        <EmotePicker coolingDown={coolingDown} onSend={sendEmote}>
+                        <EmotePicker
+                          coolingDown={coolingDown}
+                          placement={pickerPlacement}
+                          onSend={sendEmote}
+                        >
                           <div
                             className={`px-seat-avatar${
                               player.id === me?.id ? " px-seat-active" : ""
@@ -418,7 +423,11 @@ export function RoomClient({
                       <SeatEmoteBubble emoteId={emote.emoteId} at={emote.at} />
                     ) : null}
                     {player.id === me?.id && !room.you?.spectator ? (
-                      <EmotePicker coolingDown={coolingDown} onSend={sendEmote}>
+                      <EmotePicker
+                        coolingDown={coolingDown}
+                        placement={pickerPlacement}
+                        onSend={sendEmote}
+                      >
                         <div
                           className={`px-seat-avatar ${
                         isActing ? "px-seat-active" : ""

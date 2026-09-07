@@ -7,6 +7,7 @@ import {
   emoteSpritePosition,
   type EmoteId,
 } from "@/lib/emotes";
+import type { EmotePickerPlacement } from "@/lib/seat-layout";
 
 export function EmoteSticker({
   emoteId,
@@ -33,11 +34,13 @@ export function EmoteSticker({
 export function EmotePicker({
   disabled,
   coolingDown,
+  placement = "up",
   onSend,
   children,
 }: {
   disabled?: boolean;
   coolingDown?: boolean;
+  placement?: EmotePickerPlacement;
   onSend: (emoteId: EmoteId) => void;
   children: ReactNode;
 }) {
@@ -74,7 +77,7 @@ export function EmotePicker({
       {open ? (
         <div
           id={panelId}
-          className="emote-picker-panel"
+          className={`emote-picker-panel is-${placement}`}
           role="listbox"
           aria-label="选择表情"
         >

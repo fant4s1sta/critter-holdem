@@ -569,8 +569,6 @@ body {
 
 .emote-picker-panel {
   position: absolute;
-  left: 50%;
-  bottom: calc(100% + 0.45rem);
   z-index: 30;
   display: grid;
   grid-template-columns: repeat(4, 3.15rem);
@@ -583,8 +581,34 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.55),
     0 0 0 2px var(--lobby-rim),
     0 6px 14px rgba(20, 8, 0, 0.28);
+}
+
+.emote-picker-panel.is-up {
+  left: 50%;
+  bottom: calc(100% + 0.45rem);
   transform: translateX(-50%) translateZ(72px);
-  animation: emote-panel-in 160ms ease-out;
+  animation: emote-panel-in-up 160ms ease-out;
+}
+
+.emote-picker-panel.is-down {
+  left: 50%;
+  top: calc(100% + 0.45rem);
+  transform: translateX(-50%) translateZ(72px);
+  animation: emote-panel-in-down 160ms ease-out;
+}
+
+.emote-picker-panel.is-right {
+  left: calc(100% + 0.45rem);
+  top: 50%;
+  transform: translateY(-50%) translateZ(72px);
+  animation: emote-panel-in-right 160ms ease-out;
+}
+
+.emote-picker-panel.is-left {
+  right: calc(100% + 0.45rem);
+  top: 50%;
+  transform: translateY(-50%) translateZ(72px);
+  animation: emote-panel-in-left 160ms ease-out;
 }
 
 .emote-picker-item {
@@ -637,7 +661,7 @@ body {
   filter: drop-shadow(0 2px 2px rgba(20, 8, 0, 0.35));
 }
 
-@keyframes emote-panel-in {
+@keyframes emote-panel-in-up {
   from {
     opacity: 0;
     transform: translateX(-50%) translateZ(72px) translateY(6px) scale(0.96);
@@ -645,6 +669,39 @@ body {
   to {
     opacity: 1;
     transform: translateX(-50%) translateZ(72px) translateY(0) scale(1);
+  }
+}
+
+@keyframes emote-panel-in-down {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateZ(72px) translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateZ(72px) translateY(0) scale(1);
+  }
+}
+
+@keyframes emote-panel-in-right {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateZ(72px) translateX(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateZ(72px) translateX(0) scale(1);
+  }
+}
+
+@keyframes emote-panel-in-left {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateZ(72px) translateX(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateZ(72px) translateX(0) scale(1);
   }
 }
 

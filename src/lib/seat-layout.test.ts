@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   getSeatLayout,
+  emotePickerPlacement,
   LOBBY_STANDEE_ANCHOR,
   SEAT_TO_CUP,
   TABLE_SEAT_CUPS,
@@ -40,5 +41,11 @@ assert.deepEqual(
     [5, 5],
   ],
 );
+
+assert.deepEqual(
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(emotePickerPlacement),
+  ["down", "right", "right", "right", "up", "up", "left", "left", "left", "down"],
+);
+assert.equal(emotePickerPlacement(4), "up");
 
 console.log("seat layout tests passed");
