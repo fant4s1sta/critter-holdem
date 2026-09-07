@@ -42,7 +42,12 @@ export function SeatSocialStack({
       : "点头像扔道具"
     : name;
   const avatar = (
-    <div className={avatarClassName} title={title} aria-label={title}>
+    <div
+      className={avatarClassName}
+      data-seat-avatar={playerId}
+      title={title}
+      aria-label={title}
+    >
       {children}
     </div>
   );

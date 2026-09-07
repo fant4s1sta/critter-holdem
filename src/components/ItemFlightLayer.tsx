@@ -3,16 +3,19 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import {
   ITEM_FLIGHT_MS,
-  itemFlightPath,
-  mapViewportRectToElement,
+  itemFlightPercentPath,
   tableItemSrc,
   type SeatItemFlight,
 } from "@/lib/table-items";
 
-function seatRect(playerId: string): DOMRect | null {
-  const el = document.querySelector(
-    `[data-seat-player-id="${CSS.escape(playerId)}"]`,
-  );
+function avatarRect(playerId: string): DOMRect | null {
+  const escaped = CSS.escape(playerId);
+  const el =
+    document.querySelector(`[data-seat-avatar="${escaped}"]`) ??
+    document.querySelector(
+      `[data-seat-player-id="${escaped}"] .px-seat-avatar`,
+    ) ??
+    document.querySelector(`[data-seat-player-id="${escaped}"]`);
   return el instanceof HTMLElement ? el.getBoundingClientRect() : null;
 }
 
@@ -20,39 +23,18 @@ function flightStyle(
   flight: SeatItemFlight,
   layer: HTMLElement,
 ): CSSProperties | null {
-  const from = seatRect(flight.fromPlayerId);
-  const to = seatRect(flight.targetPlayerId);
+  const from = avatarRect(flight.fromPlayerId);
+  const to = avatarRect(flight.targetPlayerId);
   if (!from || !to) return null;
   const frame = layer.getBoundingClientRect();
   if (!(frame.width > 0) || !(frame.height > 0)) return null;
-  const mappedFrom = mapViewportRectToElement(
-    from,
-    frame,
-    layer.clientWidth,
-    layer.clientHeight,
-  );
-  const mappedTo = mapViewportRectToElement(
-    to,
-    frame,
-    layer.clientWidth,
-    layer.clientHeight,
-  );
-  const path = itemFlightPath(mappedFrom, mappedTo);
-  const size = Math.max(
-    28,
-    Math.min(56, Math.round(((mappedFrom.width + mappedTo.width) / 2) * 0.7)),
-  );
+  const path = itemFlightPercentPath(from, to, frame);
   return {
-    "--x0": `${path.x0}px`,
-    "--y0": `${path.y0}px`,
-    "--mx": `${path.mx}px`,
-    "--my": `${path.my}px`,
-    "--x1": `${path.x1}px`,
-    "--y1": `${path.y1}px`,
-    width: `${size}px`,
-    height: `${size}px`,
-    marginLeft: `${-size / 2}px`,
-    marginTop: `${-size / 2}px`,
+    "--x0": `${path.x0}%`,
+    "--y0": `${path.y0}%`,
+    "--x1": `${path.x1}%`,
+    "--y1": `${path.y1}%`,
+    "--size": `${path.size}%`,
     animationDuration: `${ITEM_FLIGHT_MS}ms`,
   } as CSSProperties;
 }

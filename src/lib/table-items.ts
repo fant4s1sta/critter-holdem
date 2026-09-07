@@ -37,27 +37,14 @@ export type ItemFlightPath = {
   y0: number;
   x1: number;
   y1: number;
-  mx: number;
-  my: number;
 };
 
-export function itemFlightArcPx(dx: number, dy: number): number {
-  const dist = Math.hypot(dx, dy);
-  return -Math.min(64, Math.max(22, dist * 0.2));
-}
-
 export function itemFlightPath(from: RectLike, to: RectLike): ItemFlightPath {
-  const x0 = from.left + from.width / 2;
-  const y0 = from.top + from.height / 2;
-  const x1 = to.left + to.width / 2;
-  const y1 = to.top + to.height / 2;
   return {
-    x0,
-    y0,
-    x1,
-    y1,
-    mx: (x0 + x1) / 2,
-    my: (y0 + y1) / 2 + itemFlightArcPx(x1 - x0, y1 - y0),
+    x0: from.left + from.width / 2,
+    y0: from.top + from.height / 2,
+    x1: to.left + to.width / 2,
+    y1: to.top + to.height / 2,
   };
 }
 
@@ -75,6 +62,36 @@ export function mapViewportRectToElement(
     top: (rect.top - elementRect.top) * sy,
     width: rect.width * sx,
     height: rect.height * sy,
+  };
+}
+
+export type ItemFlightPercentPath = {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  size: number;
+};
+
+/** Straight avatar-to-avatar path as % of the overlay's visible box. */
+export function itemFlightPercentPath(
+  from: RectLike,
+  to: RectLike,
+  frame: RectLike,
+): ItemFlightPercentPath {
+  if (!(frame.width > 0) || !(frame.height > 0)) {
+    return { x0: 0, y0: 0, x1: 0, y1: 0, size: 8 };
+  }
+  const fromX = from.left + from.width / 2;
+  const fromY = from.top + from.height / 2;
+  const toX = to.left + to.width / 2;
+  const toY = to.top + to.height / 2;
+  return {
+    x0: ((fromX - frame.left) / frame.width) * 100,
+    y0: ((fromY - frame.top) / frame.height) * 100,
+    x1: ((toX - frame.left) / frame.width) * 100,
+    y1: ((toY - frame.top) / frame.height) * 100,
+    size: Math.max(5, Math.min(12, (((from.width + to.width) / 2) / frame.width) * 70)),
   };
 }
 

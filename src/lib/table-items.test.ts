@@ -3,6 +3,7 @@ import {
   ITEM_FLIGHT_MS,
   isTableItemId,
   itemFlightPath,
+  itemFlightPercentPath,
   mapViewportRectToElement,
   TABLE_ITEMS,
   tableItemSrc,
@@ -31,18 +32,6 @@ assert.equal(path.x0, 30);
 assert.equal(path.y0, 40);
 assert.equal(path.x1, 130);
 assert.equal(path.y1, 100);
-assert.equal(path.mx, 80);
-assert.equal(path.my < (path.y0 + path.y1) / 2, true);
-
-const short = itemFlightPath(
-  { left: 0, top: 0, width: 10, height: 10 },
-  { left: 10, top: 0, width: 10, height: 10 },
-);
-const long = itemFlightPath(
-  { left: 0, top: 0, width: 10, height: 10 },
-  { left: 400, top: 0, width: 10, height: 10 },
-);
-assert.equal(long.my < short.my, true);
 
 const mapped = mapViewportRectToElement(
   { left: 140, top: 280, width: 80, height: 80 },
@@ -54,5 +43,15 @@ assert.equal(mapped.left, 20);
 assert.equal(mapped.top, 40);
 assert.equal(mapped.width, 40);
 assert.equal(mapped.height, 40);
+
+const perc = itemFlightPercentPath(
+  { left: 10, top: 20, width: 20, height: 20 },
+  { left: 150, top: 40, width: 20, height: 20 },
+  { left: 0, top: 0, width: 200, height: 100 },
+);
+assert.equal(perc.x0, 10);
+assert.equal(perc.y0, 30);
+assert.equal(perc.x1, 80);
+assert.equal(perc.y1, 50);
 
 console.log("table item catalog tests passed");

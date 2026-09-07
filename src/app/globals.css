@@ -762,19 +762,21 @@ body {
   z-index: 12;
   overflow: visible;
   pointer-events: none;
+  transform-style: preserve-3d;
 }
 
 .item-flight {
   position: absolute;
-  left: 0;
-  top: 0;
-  width: 44px;
-  height: 44px;
-  margin: -22px 0 0 -22px;
+  left: var(--x0);
+  top: var(--y0);
+  width: var(--size, 8%);
+  height: auto;
+  aspect-ratio: 1;
+  margin: 0;
   animation-name: item-flight;
-  animation-timing-function: cubic-bezier(0.22, 0.72, 0.28, 1);
+  animation-timing-function: cubic-bezier(0.22, 0.7, 0.35, 1);
   animation-fill-mode: both;
-  will-change: transform;
+  will-change: left, top, transform;
   filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.38));
 }
 
@@ -789,15 +791,16 @@ body {
 
 @keyframes item-flight {
   0% {
-    transform: translate(var(--x0), var(--y0)) scale(0.62) rotate(-22deg);
+    left: var(--x0);
+    top: var(--y0);
+    transform: translate(-50%, -50%) translateZ(24px) scale(0.72) rotate(-14deg);
     opacity: 0;
   }
-  10% { opacity: 1; }
-  55% {
-    transform: translate(var(--mx), var(--my)) scale(1.16) rotate(10deg);
-  }
+  12% { opacity: 1; }
   100% {
-    transform: translate(var(--x1), var(--y1)) scale(0.9) rotate(18deg);
+    left: var(--x1);
+    top: var(--y1);
+    transform: translate(-50%, -50%) translateZ(24px) scale(0.92) rotate(12deg);
     opacity: 1;
   }
 }
