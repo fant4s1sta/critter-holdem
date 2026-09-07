@@ -27,6 +27,9 @@ assert.deepEqual(
 assert.deepEqual(layout.map((s) => s.cupIndex), SEAT_TO_CUP);
 assert.equal(layout[0].cupIndex, 0);
 assert.equal(layout[9].cupIndex, 9);
+assert.equal(layout[2].x, 9);
+assert.equal(layout[7].x, 91);
+assert.equal(layout[2].x + layout[7].x, 100);
 
 const sparse = getSeatLayout([
   { id: "a", seat: 0 },

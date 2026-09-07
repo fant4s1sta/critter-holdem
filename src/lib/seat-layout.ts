@@ -15,12 +15,12 @@ export interface SeatLayoutSlot<T extends SeatLayoutPlayer> {
 export const TABLE_SEAT_CUPS: ReadonlyArray<readonly [number, number]> = [
   [0.28, 0.34], // 0 upper-left
   [0.13, 0.39], // 1 left-upper
-  [0.05, 0.55], // 2 left-middle
+  [0.09, 0.55], // 2 left-middle
   [0.10, 0.71], // 3 left-lower
   [0.27, 0.82], // 4 lower-left
   [0.73, 0.82], // 5 lower-right
   [0.90, 0.71], // 6 right-lower
-  [0.95, 0.55], // 7 right-middle
+  [0.91, 0.55], // 7 right-middle
   [0.87, 0.39], // 8 right-upper
   [0.72, 0.34], // 9 upper-right
 ];
