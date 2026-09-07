@@ -613,7 +613,8 @@ body {
 .seat-emote-bubble {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 0.05rem);
+  /* Clear SB/BB tag that sits just above the avatar rim. */
+  bottom: calc(100% + 1.35rem);
   z-index: 40;
   transform: translateX(-50%) translateZ(48px);
   pointer-events: none;
