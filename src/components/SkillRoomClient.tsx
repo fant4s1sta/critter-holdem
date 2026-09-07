@@ -19,9 +19,11 @@ import { getSocket } from "@/lib/socket";
 import { useRoomConnection } from "@/lib/use-room-connection";
 import { useAvatarSelection } from "@/lib/use-avatar-selection";
 import { useAddBot } from "@/lib/use-add-bot";
-import { getSeatLayout, seatBadgeForSeat } from "@/lib/seat-layout";
+import { useTableEmotes } from "@/lib/use-table-emotes";
+import { getSeatLayout, emotePickerPlacement, seatBadgeForSeat } from "@/lib/seat-layout";
 import { CommunityCards } from "./CommunityCards";
 import { DealerSpeech } from "./DealerSpeech";
+import { EmotePicker, SeatEmoteBubble } from "./EmotePicker";
 import { PlayingCard } from "./PlayingCard";
 import { PotPlaque } from "./PotPlaque";
 import { FullScreenLoader } from "./FullScreenLoader";
@@ -125,6 +127,13 @@ export function SkillRoomClient({
     const t = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(t);
   }, [room?.status]);
+
+  const { bubbles, sendEmote, coolingDown } = useTableEmotes({
+    enabled: ready && !!identity,
+    roomCode,
+    identity,
+    onError: onRoomError,
+  });
 
   useRoomConnection({
     enabled: ready && !!identity,
@@ -378,7 +387,9 @@ export function SkillRoomClient({
               />
             )
           }
-          seats={seatLayout.map(({ player, x, y }) => {
+          seats={seatLayout.map(({ player, x, y, cupIndex }) => {
+            const emote = bubbles[player.id];
+            const pickerPlacement = emotePickerPlacement(cupIndex);
             if (inLobby) {
               return (
                 <div
@@ -387,20 +398,41 @@ export function SkillRoomClient({
                   style={{ left: `${x}%`, top: `${y}%` }}
                 >
                   <div className="relative flex flex-col items-center">
-                    <div className="relative">
-                      <div
-                        className={`px-seat-avatar${
-                          player.id === me?.id ? " px-seat-active" : ""
-                        }${player.connected ? "" : " opacity-55"}`}
-                        title={player.name}
-                        aria-label={player.name}
-                      >
-                        <AnimalAvatar id={player.avatarId} size="fill" priority="high" />
-                      </div>
-                      {player.isHost ? (
-                        <span className="px-seat-blind is-host">房主</span>
+                    <div className="relative seat-avatar-stack">
+                      {emote ? (
+                        <SeatEmoteBubble emoteId={emote.emoteId} at={emote.at} />
                       ) : null}
+                      {player.id === me?.id && !room.you?.spectator ? (
+                        <EmotePicker
+                          coolingDown={coolingDown}
+                          placement={pickerPlacement}
+                          onSend={sendEmote}
+                        >
+                          <div
+                            className={`px-seat-avatar${
+                              player.id === me?.id ? " px-seat-active" : ""
+                            }${player.connected ? "" : " opacity-55"}`}
+                            title="点头像发表情"
+                            aria-label="点头像发表情"
+                          >
+                            <AnimalAvatar id={player.avatarId} size="fill" priority="high" />
+                          </div>
+                        </EmotePicker>
+                      ) : (
+                        <div
+                          className={`px-seat-avatar${
+                            player.id === me?.id ? " px-seat-active" : ""
+                          }${player.connected ? "" : " opacity-55"}`}
+                          title={player.name}
+                          aria-label={player.name}
+                        >
+                          <AnimalAvatar id={player.avatarId} size="fill" priority="high" />
+                        </div>
+                      )}
                     </div>
+                    {player.isHost ? (
+                      <span className="px-seat-blind is-host">房主</span>
+                    ) : null}
                     <p className="px-seat-name">{player.name}</p>
                     <p className="px-seat-chips lobby-seat-meta">
                       {player.aiControlled
@@ -426,37 +458,71 @@ export function SkillRoomClient({
                 style={{ left: `${x}%`, top: `${y}%` }}
               >
                 <div className="relative flex flex-col items-center">
-                  <div className="relative">
-                    <div
-                      className={`px-seat-avatar ${
+                  <div className="relative seat-avatar-stack">
+                    {emote ? (
+                      <SeatEmoteBubble emoteId={emote.emoteId} at={emote.at} />
+                    ) : null}
+                    {player.id === me?.id && !room.you?.spectator ? (
+                      <EmotePicker
+                        coolingDown={coolingDown}
+                        placement={pickerPlacement}
+                        onSend={sendEmote}
+                      >
+                        <div
+                          className={`px-seat-avatar ${
                         isActing ? "px-seat-active" : ""
                       } ${
                         winner && room.game?.street === "showdown"
                           ? "px-seat-winner"
                           : ""
                       } ${player.folded ? "opacity-45" : ""}`}
-                      title={player.name}
-                      aria-label={player.name}
-                    >
-                      <AnimalAvatar
-                        id={player.avatarId}
-                        size="fill"
-                        priority="high"
-                        eliminated={
+                          title="点头像发表情"
+                          aria-label="点头像发表情"
+                        >
+                          <AnimalAvatar
+                            id={player.avatarId}
+                            size="fill"
+                            priority="high"
+                            eliminated={
                           player.chips <= 0 &&
                           !player.allIn &&
                           (player.holeCardCount ?? 0) === 0
                         }
-                      />
-                    </div>
-                    {seatBadge ? (
-                      <span
-                        className={`px-seat-blind ${seatBadge.tone === "bb" ? "is-bb" : ""}`}
+                          />
+                        </div>
+                      </EmotePicker>
+                    ) : (
+                      <div
+                        className={`px-seat-avatar ${
+                        isActing ? "px-seat-active" : ""
+                      } ${
+                        winner && room.game?.street === "showdown"
+                          ? "px-seat-winner"
+                          : ""
+                      } ${player.folded ? "opacity-45" : ""}`}
+                        title={player.name}
+                        aria-label={player.name}
                       >
-                        {seatBadge.label}
-                      </span>
-                    ) : null}
+                        <AnimalAvatar
+                          id={player.avatarId}
+                          size="fill"
+                          priority="high"
+                          eliminated={
+                          player.chips <= 0 &&
+                          !player.allIn &&
+                          (player.holeCardCount ?? 0) === 0
+                        }
+                        />
+                      </div>
+                    )}
                   </div>
+                  {seatBadge ? (
+                    <span
+                      className={`px-seat-blind ${seatBadge.tone === "bb" ? "is-bb" : ""}`}
+                    >
+                      {seatBadge.label}
+                    </span>
+                  ) : null}
                   <p className="px-seat-name">{player.name}</p>
                   <p className="px-seat-chips">{player.chips}</p>
                 </div>

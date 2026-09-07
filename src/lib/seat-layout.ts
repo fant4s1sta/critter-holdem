@@ -52,6 +52,17 @@ function cupForSeat(seat: number): number {
   return SEAT_TO_CUP[seat] ?? SEAT_TO_CUP[0];
 }
 
+/** Where the emote picker opens relative to the avatar. */
+export type EmotePickerPlacement = "up" | "down" | "left" | "right";
+
+/** Top seats open down; side seats open toward the felt; bottom seats open up. */
+export function emotePickerPlacement(cupIndex: number): EmotePickerPlacement {
+  if (cupIndex === 0 || cupIndex === 9) return "down";
+  if (cupIndex === 1 || cupIndex === 2 || cupIndex === 3) return "right";
+  if (cupIndex === 6 || cupIndex === 7 || cupIndex === 8) return "left";
+  return "up";
+}
+
 /**
  * Fixed rail positions by seat number. Dealer / blind badges rotate; avatars stay put.
  */

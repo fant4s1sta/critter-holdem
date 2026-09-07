@@ -9,6 +9,12 @@ import type {
   RoomPublicState,
   RuleMode,
 } from "../src/lib/types";
+import {
+  EMOTE_COOLDOWN_MS,
+  isEmoteId,
+  type PlayerEmoteEvent,
+  type SendEmotePayload,
+} from "../src/lib/emotes";
 import { RoomManager } from "./room-manager";
 
 const dev = process.env.NODE_ENV !== "production";
@@ -87,6 +93,10 @@ type ClientToServer = {
     },
     ack: (res: { ok: boolean; error?: string }) => void,
   ) => void;
+  send_emote: (
+    payload: SendEmotePayload,
+    ack: (res: { ok: boolean; error?: string }) => void,
+  ) => void;
 };
 
 app.prepare().then(async () => {
@@ -122,6 +132,9 @@ app.prepare().then(async () => {
       broadcastRoom(code, options?.forceFull ?? false);
     },
   });
+
+  /** Side-channel emote cooldown: `${roomCode}:${playerId}` → ready-at ms. */
+  const emoteReadyAt = new Map<string, number>();
 
   function broadcastRoom(code: string, forceFull: boolean) {
     for (const emission of rooms.collectEmissions(code, { forceFull })) {
@@ -309,6 +322,39 @@ app.prepare().then(async () => {
         ack({ ok: true });
       } catch (e) {
         ack({ ok: false, error: e instanceof Error ? e.message : "技能失败" });
+      }
+    });
+
+    c2s.on("send_emote", async (payload, ack) => {
+      try {
+        if (!(await rooms.hydrate(payload.code))) {
+          throw new Error("房间不存在");
+        }
+        if (!isEmoteId(payload.emoteId)) {
+          throw new Error("无效表情");
+        }
+        rooms.assertSeatedPlayer(payload.code, payload.playerId, payload.secret);
+
+        const code = payload.code.toUpperCase();
+        const cooldownKey = `${code}:${payload.playerId}`;
+        const now = Date.now();
+        const readyAt = emoteReadyAt.get(cooldownKey) ?? 0;
+        if (now < readyAt) {
+          throw new Error("表情冷却中");
+        }
+
+        emoteReadyAt.set(cooldownKey, now + EMOTE_COOLDOWN_MS);
+
+        const event: PlayerEmoteEvent = {
+          code,
+          playerId: payload.playerId,
+          emoteId: payload.emoteId,
+          at: now,
+        };
+        io.to(`room:${code}`).emit("player_emote", event);
+        ack({ ok: true });
+      } catch (e) {
+        ack({ ok: false, error: e instanceof Error ? e.message : "发送失败" });
       }
     });
 
