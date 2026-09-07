@@ -605,6 +605,20 @@ export class RoomManager {
     return player;
   }
 
+  /** Thrower and target must both be seated; cannot throw at yourself. */
+  assertItemThrow(
+    code: string,
+    playerId: string,
+    secret: string,
+    targetPlayerId: string,
+  ) {
+    const thrower = this.assertSeatedPlayer(code, playerId, secret);
+    if (targetPlayerId === playerId) throw new Error("不能对自己扔道具");
+    const target = this.requireRoom(code).players.get(targetPlayerId);
+    if (!target) throw new Error("目标不在桌上");
+    return { thrower, target };
+  }
+
   leaveRoom(code: string, playerId: string, secret: string) {
     const room = this.rooms.get(code.toUpperCase());
     if (!room) return;

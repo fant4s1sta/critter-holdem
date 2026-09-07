@@ -12,6 +12,7 @@ import {
   POKER_TABLE_REFERENCE_SRC,
 } from "./critical-images";
 import { EMOTE_STICKER_SRC } from "./emotes";
+import { TABLE_ITEM_SRCS } from "./table-items";
 
 /** First-paint boot splash: visible before React / CSS bundle arrive. */
 
@@ -31,6 +32,7 @@ export const BOOT_ASSET_SRCS: readonly string[] = [
   POKER_TABLE_REFERENCE_SRC,
   SKILL_ITEM_SRC,
   EMOTE_STICKER_SRC,
+  ...TABLE_ITEM_SRCS,
   ...ANIMAL_AVATAR_SRCS,
   ...ANIMAL_STANDEE_SRCS,
 ];

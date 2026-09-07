@@ -15,6 +15,11 @@ import {
   type PlayerEmoteEvent,
   type SendEmotePayload,
 } from "../src/lib/emotes";
+import {
+  isTableItemId,
+  type PlayerItemEvent,
+  type ThrowItemPayload,
+} from "../src/lib/table-items";
 import { RoomManager } from "./room-manager";
 
 const dev = process.env.NODE_ENV !== "production";
@@ -97,6 +102,10 @@ type ClientToServer = {
     payload: SendEmotePayload,
     ack: (res: { ok: boolean; error?: string }) => void,
   ) => void;
+  throw_item: (
+    payload: ThrowItemPayload,
+    ack: (res: { ok: boolean; error?: string }) => void,
+  ) => void;
 };
 
 app.prepare().then(async () => {
@@ -133,8 +142,8 @@ app.prepare().then(async () => {
     },
   });
 
-  /** Side-channel emote cooldown: `${roomCode}:${playerId}` → ready-at ms. */
-  const emoteReadyAt = new Map<string, number>();
+  /** Shared emote/item cooldown: `${roomCode}:${playerId}` → ready-at ms. */
+  const socialReadyAt = new Map<string, number>();
 
   function broadcastRoom(code: string, forceFull: boolean) {
     for (const emission of rooms.collectEmissions(code, { forceFull })) {
@@ -338,12 +347,12 @@ app.prepare().then(async () => {
         const code = payload.code.toUpperCase();
         const cooldownKey = `${code}:${payload.playerId}`;
         const now = Date.now();
-        const readyAt = emoteReadyAt.get(cooldownKey) ?? 0;
+        const readyAt = socialReadyAt.get(cooldownKey) ?? 0;
         if (now < readyAt) {
-          throw new Error("表情冷却中");
+          throw new Error("冷却中");
         }
 
-        emoteReadyAt.set(cooldownKey, now + EMOTE_COOLDOWN_MS);
+        socialReadyAt.set(cooldownKey, now + EMOTE_COOLDOWN_MS);
 
         const event: PlayerEmoteEvent = {
           code,
@@ -355,6 +364,45 @@ app.prepare().then(async () => {
         ack({ ok: true });
       } catch (e) {
         ack({ ok: false, error: e instanceof Error ? e.message : "发送失败" });
+      }
+    });
+
+    c2s.on("throw_item", async (payload, ack) => {
+      try {
+        if (!(await rooms.hydrate(payload.code))) {
+          throw new Error("房间不存在");
+        }
+        if (!isTableItemId(payload.itemId)) {
+          throw new Error("无效道具");
+        }
+        rooms.assertItemThrow(
+          payload.code,
+          payload.playerId,
+          payload.secret,
+          payload.targetPlayerId,
+        );
+
+        const code = payload.code.toUpperCase();
+        const cooldownKey = `${code}:${payload.playerId}`;
+        const now = Date.now();
+        const readyAt = socialReadyAt.get(cooldownKey) ?? 0;
+        if (now < readyAt) {
+          throw new Error("冷却中");
+        }
+
+        socialReadyAt.set(cooldownKey, now + EMOTE_COOLDOWN_MS);
+
+        const event: PlayerItemEvent = {
+          code,
+          fromPlayerId: payload.playerId,
+          targetPlayerId: payload.targetPlayerId,
+          itemId: payload.itemId,
+          at: now,
+        };
+        io.to(`room:${code}`).emit("player_item", event);
+        ack({ ok: true });
+      } catch (e) {
+        ack({ ok: false, error: e instanceof Error ? e.message : "投掷失败" });
       }
     });
 

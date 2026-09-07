@@ -329,6 +329,82 @@ function manager() {
   assert.ok(other.avatarId, "未选动物应在开局时随机分配");
 }
 
+{
+  const rooms = manager();
+  const host = rooms.createRoom({
+    name: "房主",
+    avatarId: "rabbit",
+  } as never);
+  const guest = rooms.joinRoom({
+    code: host.room.code,
+    name: "玩家",
+    avatarId: "fox",
+  } as never);
+
+  rooms.assertItemThrow(
+    host.room.code,
+    host.identity.playerId,
+    host.identity.secret,
+    guest.identity.playerId,
+  );
+
+  assert.throws(
+    () =>
+      rooms.assertItemThrow(
+        host.room.code,
+        host.identity.playerId,
+        host.identity.secret,
+        host.identity.playerId,
+      ),
+    /不能对自己扔道具/,
+  );
+
+  assert.throws(
+    () =>
+      rooms.assertItemThrow(
+        host.room.code,
+        host.identity.playerId,
+        host.identity.secret,
+        "missing-player",
+      ),
+    /目标不在桌上/,
+  );
+}
+
+{
+  const rooms = manager();
+  const host = rooms.createRoom({
+    name: "房主",
+    avatarId: "rabbit",
+  } as never);
+  rooms.joinRoom({
+    code: host.room.code,
+    name: "玩家",
+    avatarId: "fox",
+  } as never);
+  rooms.startGame(
+    host.room.code,
+    host.identity.playerId,
+    host.identity.secret,
+  );
+  const spectator = rooms.joinRoom({
+    code: host.room.code,
+    name: "观众",
+    avatarId: "gorilla",
+  } as never);
+  assert.equal(spectator.spectator, true);
+  assert.throws(
+    () =>
+      rooms.assertItemThrow(
+        host.room.code,
+        spectator.identity.playerId,
+        spectator.identity.secret,
+        host.identity.playerId,
+      ),
+    /无权操作/,
+  );
+}
+
 console.log("room manager tests passed");
 process.exit(0);
 
