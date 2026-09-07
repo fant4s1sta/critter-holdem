@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   EMOTE_COOLDOWN_MS,
   EMOTE_DISPLAY_MS,
-  emojiForEmoteId,
+  isEmoteId,
   type EmoteId,
   type PlayerEmoteEvent,
 } from "@/lib/emotes";
@@ -13,7 +13,6 @@ import type { PlayerIdentity } from "@/lib/types";
 
 export type SeatEmoteBubble = {
   playerId: string;
-  emoji: string;
   emoteId: EmoteId;
   at: number;
 };
@@ -42,12 +41,12 @@ export function useTableEmotes(opts: {
 
     const onPlayerEmote = (event: PlayerEmoteEvent) => {
       if (event.code !== code) return;
+      if (!isEmoteId(event.emoteId)) return;
 
       setBubbles((prev) => ({
         ...prev,
         [event.playerId]: {
           playerId: event.playerId,
-          emoji: event.emoji,
           emoteId: event.emoteId,
           at: event.at,
         },
@@ -82,10 +81,10 @@ export function useTableEmotes(opts: {
     };
   }, []);
 
-  const showBubble = useCallback((playerId: string, emoteId: EmoteId, emoji: string, at: number) => {
+  const showBubble = useCallback((playerId: string, emoteId: EmoteId, at: number) => {
     setBubbles((prev) => ({
       ...prev,
-      [playerId]: { playerId, emoji, emoteId, at },
+      [playerId]: { playerId, emoteId, at },
     }));
     const existing = timersRef.current.get(playerId);
     if (existing) clearTimeout(existing);
@@ -106,13 +105,11 @@ export function useTableEmotes(opts: {
     (emoteId: EmoteId) => {
       if (!identity) return;
       if (Date.now() < cooldownUntil) return;
-
-      const emoji = emojiForEmoteId(emoteId);
-      if (!emoji) return;
+      if (!isEmoteId(emoteId)) return;
 
       // Show immediately for the sender (do not wait for ack / broadcast).
       const at = Date.now();
-      showBubble(identity.playerId, emoteId, emoji, at);
+      showBubble(identity.playerId, emoteId, at);
 
       const socket = getSocket();
       socket.emit(

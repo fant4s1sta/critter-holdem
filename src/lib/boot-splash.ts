@@ -11,6 +11,7 @@ import {
   CASINO_BACKGROUND_SRC,
   POKER_TABLE_REFERENCE_SRC,
 } from "./critical-images";
+import { EMOTE_STICKER_SRC } from "./emotes";
 
 /** First-paint boot splash: visible before React / CSS bundle arrive. */
 
@@ -29,6 +30,7 @@ export const BOOT_ASSET_SRCS: readonly string[] = [
   AI_ASSISTANT_SRC,
   POKER_TABLE_REFERENCE_SRC,
   SKILL_ITEM_SRC,
+  EMOTE_STICKER_SRC,
   ...ANIMAL_AVATAR_SRCS,
   ...ANIMAL_STANDEE_SRCS,
 ];

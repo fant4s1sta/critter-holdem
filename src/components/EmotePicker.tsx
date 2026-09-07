@@ -1,9 +1,35 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { TABLE_EMOTES, type EmoteId } from "@/lib/emotes";
+import {
+  EMOTE_STICKER_SRC,
+  TABLE_EMOTES,
+  emoteSpritePosition,
+  type EmoteId,
+} from "@/lib/emotes";
 
-/** Click own seat avatar to open the 8-emoji panel. */
+export function EmoteSticker({
+  emoteId,
+  className,
+}: {
+  emoteId: EmoteId;
+  className?: string;
+}) {
+  const emote = TABLE_EMOTES.find((item) => item.id === emoteId);
+  if (!emote) return null;
+  return (
+    <span
+      className={className ? `emote-sticker ${className}` : "emote-sticker"}
+      style={{
+        backgroundImage: `url(${EMOTE_STICKER_SRC})`,
+        backgroundPosition: emoteSpritePosition(emote.col, emote.row),
+      }}
+      aria-hidden
+    />
+  );
+}
+
+/** Click own seat avatar to open the sticker panel. */
 export function EmotePicker({
   disabled,
   coolingDown,
@@ -66,7 +92,7 @@ export function EmotePicker({
                 setOpen(false);
               }}
             >
-              <span aria-hidden="true">{item.emoji}</span>
+              <EmoteSticker emoteId={item.id} />
             </button>
           ))}
         </div>
@@ -88,15 +114,15 @@ export function EmotePicker({
 }
 
 export function SeatEmoteBubble({
-  emoji,
+  emoteId,
   at,
 }: {
-  emoji: string;
+  emoteId: EmoteId;
   at: number;
 }) {
   return (
     <div className="seat-emote-bubble" key={at} aria-hidden="true">
-      <span className="seat-emote-bubble-emoji">{emoji}</span>
+      <EmoteSticker emoteId={emoteId} />
     </div>
   );
 }

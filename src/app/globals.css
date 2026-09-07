@@ -573,9 +573,9 @@ body {
   bottom: calc(100% + 0.45rem);
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(4, 2.2rem);
-  gap: 0.28rem;
-  padding: 0.4rem;
+  grid-template-columns: repeat(5, 2.05rem);
+  gap: 0.22rem;
+  padding: 0.36rem;
   border-radius: 0.85rem;
   border: 3px solid var(--lobby-wood-deep);
   background: linear-gradient(180deg, #fff9e8 0%, #f3e0b0 100%);
@@ -590,14 +590,24 @@ body {
 .emote-picker-item {
   display: grid;
   place-items: center;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.05rem;
+  height: 2.05rem;
+  padding: 0.08rem;
   border: 0;
   border-radius: 0.55rem;
   background: transparent;
-  font-size: 1.35rem;
-  line-height: 1;
+  line-height: 0;
   cursor: pointer;
+}
+
+.emote-sticker {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 500% 400%;
+  pointer-events: none;
+  user-select: none;
 }
 
 .emote-picker-item:hover:not(:disabled),
@@ -621,10 +631,9 @@ body {
   animation: seat-emote-pop 2.2s ease-out forwards;
 }
 
-.seat-emote-bubble-emoji {
-  display: block;
-  font-size: 1.85rem;
-  line-height: 1;
+.seat-emote-bubble .emote-sticker {
+  width: 2.55rem;
+  height: 2.55rem;
   filter: drop-shadow(0 2px 2px rgba(20, 8, 0, 0.35));
 }
 

@@ -399,7 +399,7 @@ export function SkillRoomClient({
                   <div className="relative flex flex-col items-center">
                     <div className="relative seat-avatar-stack">
                       {emote ? (
-                        <SeatEmoteBubble emoji={emote.emoji} at={emote.at} />
+                        <SeatEmoteBubble emoteId={emote.emoteId} at={emote.at} />
                       ) : null}
                       {player.id === me?.id && !room.you?.spectator ? (
                         <EmotePicker coolingDown={coolingDown} onSend={sendEmote}>
@@ -455,7 +455,7 @@ export function SkillRoomClient({
                 <div className="relative flex flex-col items-center">
                   <div className="relative seat-avatar-stack">
                     {emote ? (
-                      <SeatEmoteBubble emoji={emote.emoji} at={emote.at} />
+                      <SeatEmoteBubble emoteId={emote.emoteId} at={emote.at} />
                     ) : null}
                     {player.id === me?.id && !room.you?.spectator ? (
                       <EmotePicker coolingDown={coolingDown} onSend={sendEmote}>

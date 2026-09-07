@@ -11,7 +11,6 @@ import type {
 } from "../src/lib/types";
 import {
   EMOTE_COOLDOWN_MS,
-  emojiForEmoteId,
   isEmoteId,
   type PlayerEmoteEvent,
   type SendEmotePayload,
@@ -344,16 +343,12 @@ app.prepare().then(async () => {
           throw new Error("表情冷却中");
         }
 
-        const emoji = emojiForEmoteId(payload.emoteId);
-        if (!emoji) throw new Error("无效表情");
-
         emoteReadyAt.set(cooldownKey, now + EMOTE_COOLDOWN_MS);
 
         const event: PlayerEmoteEvent = {
           code,
           playerId: payload.playerId,
           emoteId: payload.emoteId,
-          emoji,
           at: now,
         };
         io.to(`room:${code}`).emit("player_emote", event);
