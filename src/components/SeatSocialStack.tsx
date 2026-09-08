@@ -37,9 +37,11 @@ export function SeatSocialStack({
   children: ReactNode;
 }) {
   const title = canUseSocial
-    ? isSelf
-      ? "点头像发表情"
-      : "点头像扔道具"
+    ? coolingDown
+      ? "冷却中"
+      : isSelf
+        ? "点头像发表情"
+        : "点头像扔道具"
     : name;
   const avatar = (
     <div
@@ -65,7 +67,9 @@ export function SeatSocialStack({
               : ""
       }`}
     >
-      {emote ? <EmoteBubble emoteId={emote.emoteId} at={emote.at} /> : null}
+      {emote ? (
+        <EmoteBubble key={emote.at} emoteId={emote.emoteId} at={emote.at} />
+      ) : null}
       {itemHit ? (
         <ItemHitFx key={itemHit.at} itemId={itemHit.itemId} at={itemHit.at} landed />
       ) : null}

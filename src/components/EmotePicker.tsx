@@ -45,8 +45,9 @@ export function EmotePicker({
   onSend: (emoteId: EmoteId) => void;
   children: ReactNode;
 }) {
+  const menuLocked = Boolean(disabled || coolingDown);
   const { open, setOpen, rootRef, triggerRef, panelRef, panelId } =
-    usePickerMenu(disabled);
+    usePickerMenu(menuLocked);
 
   return (
     <div className="emote-picker" ref={rootRef}>
@@ -65,7 +66,7 @@ export function EmotePicker({
             type="button"
             role="option"
             className="emote-picker-item"
-            disabled={disabled || coolingDown}
+            disabled={menuLocked}
             title={item.label}
             aria-label={item.label}
             onClick={() => {
@@ -81,12 +82,15 @@ export function EmotePicker({
         ref={triggerRef}
         type="button"
         className="emote-picker-trigger"
-        disabled={disabled}
+        disabled={menuLocked}
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         aria-label={coolingDown ? "表情冷却中" : "发送表情"}
         title={coolingDown ? "冷却中" : "点头像发表情"}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          if (menuLocked) return;
+          setOpen((value) => !value);
+        }}
       >
         {children}
       </button>
@@ -96,13 +100,13 @@ export function EmotePicker({
 
 export function SeatEmoteBubble({
   emoteId,
-  at,
 }: {
   emoteId: EmoteId;
-  at: number;
+  /** Stable remount token — applied by parent via React `key`. */
+  at?: number;
 }) {
   return (
-    <div className="seat-emote-bubble" key={at} aria-hidden="true">
+    <div className="seat-emote-bubble" aria-hidden="true">
       <EmoteSticker emoteId={emoteId} />
     </div>
   );

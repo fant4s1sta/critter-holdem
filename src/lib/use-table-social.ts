@@ -17,6 +17,7 @@ import {
   type TableItemId,
 } from "@/lib/table-items";
 import { getSocket } from "@/lib/socket";
+import { shouldIgnoreOwnSocialEcho } from "@/lib/social-echo";
 import type { PlayerIdentity } from "@/lib/types";
 
 export type SeatEmoteBubble = {
@@ -124,6 +125,10 @@ export function useTableSocial(opts: {
     const onPlayerEmote = (event: PlayerEmoteEvent) => {
       if (event.code !== code) return;
       if (!isEmoteId(event.emoteId)) return;
+      const me = identityRef.current;
+      // Sender already painted an optimistic bubble; applying the room echo
+      // would retarget `at` and restart the CSS pop (visible flicker).
+      if (shouldIgnoreOwnSocialEcho(me?.playerId, event.playerId)) return;
 
       setBubbles((prev) => ({
         ...prev,
@@ -154,7 +159,7 @@ export function useTableSocial(opts: {
       if (!isTableItemId(event.itemId)) return;
       const me = identityRef.current;
       // Sender already painted an optimistic throw.
-      if (me && event.fromPlayerId === me.playerId) return;
+      if (shouldIgnoreOwnSocialEcho(me?.playerId, event.fromPlayerId)) return;
       showThrow(event.fromPlayerId, event.targetPlayerId, event.itemId, event.at);
     };
 
@@ -185,6 +190,15 @@ export function useTableSocial(opts: {
     }, EMOTE_COOLDOWN_MS);
   }, []);
 
+  const clearCooldown = useCallback(() => {
+    setCooldownUntil(0);
+    setCoolingDown(false);
+    if (cooldownTimerRef.current) {
+      clearTimeout(cooldownTimerRef.current);
+      cooldownTimerRef.current = null;
+    }
+  }, []);
+
   const showBubble = useCallback((playerId: string, emoteId: EmoteId, at: number) => {
     setBubbles((prev) => ({
       ...prev,
@@ -205,6 +219,21 @@ export function useTableSocial(opts: {
     emoteTimersRef.current.set(playerId, timer);
   }, []);
 
+  const clearBubble = useCallback((playerId: string, at: number) => {
+    setBubbles((prev) => {
+      const current = prev[playerId];
+      if (!current || current.at !== at) return prev;
+      const next = { ...prev };
+      delete next[playerId];
+      return next;
+    });
+    const existing = emoteTimersRef.current.get(playerId);
+    if (existing) {
+      clearTimeout(existing);
+      emoteTimersRef.current.delete(playerId);
+    }
+  }, []);
+
   const sendEmote = useCallback(
     (emoteId: EmoteId) => {
       if (!identity) return;
@@ -212,6 +241,8 @@ export function useTableSocial(opts: {
       if (!isEmoteId(emoteId)) return;
 
       const at = Date.now();
+      // Lock menus immediately so the picker cannot reopen mid-flight.
+      markCooldown();
       showBubble(identity.playerId, emoteId, at);
 
       const socket = getSocket();
@@ -225,14 +256,23 @@ export function useTableSocial(opts: {
         },
         (res: { ok: boolean; error?: string }) => {
           if (!res.ok) {
+            clearCooldown();
+            clearBubble(identity.playerId, at);
             onError?.(res.error || "发送失败");
-            return;
           }
-          markCooldown();
         },
       );
     },
-    [cooldownUntil, identity, markCooldown, onError, roomCode, showBubble],
+    [
+      clearBubble,
+      clearCooldown,
+      cooldownUntil,
+      identity,
+      markCooldown,
+      onError,
+      roomCode,
+      showBubble,
+    ],
   );
 
   const throwItem = useCallback(
@@ -243,6 +283,7 @@ export function useTableSocial(opts: {
       if (targetPlayerId === identity.playerId) return;
 
       const at = Date.now();
+      markCooldown();
       showThrow(identity.playerId, targetPlayerId, itemId, at);
 
       const socket = getSocket();
@@ -257,14 +298,22 @@ export function useTableSocial(opts: {
         },
         (res: { ok: boolean; error?: string }) => {
           if (!res.ok) {
+            clearCooldown();
             onError?.(res.error || "投掷失败");
             return;
           }
-          markCooldown();
         },
       );
     },
-    [cooldownUntil, identity, markCooldown, onError, roomCode, showThrow],
+    [
+      clearCooldown,
+      cooldownUntil,
+      identity,
+      markCooldown,
+      onError,
+      roomCode,
+      showThrow,
+    ],
   );
 
   return {

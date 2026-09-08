@@ -31,8 +31,9 @@ export function ItemPicker({
   onThrow: (itemId: TableItemId) => void;
   children: ReactNode;
 }) {
+  const menuLocked = Boolean(disabled || coolingDown);
   const { open, setOpen, rootRef, triggerRef, panelRef, panelId } =
-    usePickerMenu(disabled);
+    usePickerMenu(menuLocked);
 
   return (
     <div className="emote-picker" ref={rootRef}>
@@ -51,7 +52,7 @@ export function ItemPicker({
             type="button"
             role="option"
             className="emote-picker-item"
-            disabled={disabled || coolingDown}
+            disabled={menuLocked}
             title={item.label}
             aria-label={item.label}
             onClick={() => {
@@ -67,12 +68,15 @@ export function ItemPicker({
         ref={triggerRef}
         type="button"
         className="emote-picker-trigger"
-        disabled={disabled}
+        disabled={menuLocked}
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         aria-label={coolingDown ? "道具冷却中" : "扔道具"}
         title={coolingDown ? "冷却中" : "点头像扔道具"}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          if (menuLocked) return;
+          setOpen((value) => !value);
+        }}
       >
         {children}
       </button>
