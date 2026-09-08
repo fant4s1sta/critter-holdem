@@ -546,6 +546,29 @@ body {
   color: var(--lobby-ink);
 }
 
+/* Seat menus portal here so they stack above hole cards / AI hint / status. */
+.table-social-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.emote-picker-portal-anchor {
+  position: absolute;
+  left: var(--anchor-x);
+  top: var(--anchor-y);
+  width: var(--anchor-w);
+  height: var(--anchor-h);
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+.emote-picker-portal-anchor .emote-picker-panel {
+  pointer-events: auto;
+}
+
 .emote-picker {
   position: relative;
   z-index: 1;

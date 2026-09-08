@@ -1,9 +1,10 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { SeatItemFlight } from "@/lib/table-items";
 import { ItemFlightLayer } from "./ItemFlightLayer";
 import { PokerTableSurface } from "./PokerTableSurface";
+import { TableSocialOverlayProvider } from "./TableSocialOverlay";
 
 export function RoomTableShell({
   boardOverlay,
@@ -22,27 +23,33 @@ export function RoomTableShell({
   footer: ReactNode;
   isLobby: boolean;
 }) {
+  const [overlay, setOverlay] = useState<HTMLElement | null>(null);
+
   return (
-    <section
-      className={`lobby-table-shell ${isLobby ? "is-lobby" : "is-game"} relative z-10 px-1`}
-    >
-      <div className="table-stage table-stage-lobby">
-        <div className="table-board reference-table-board">
-          {boardOverlay}
-          <div className="table-play">
-            <div className="table-felt">
-              <PokerTableSurface />
+    <TableSocialOverlayProvider overlay={overlay}>
+      <section
+        className={`lobby-table-shell ${isLobby ? "is-lobby" : "is-game"} relative z-10 px-1`}
+      >
+        <div className="table-stage table-stage-lobby">
+          <div className="table-board reference-table-board">
+            {boardOverlay}
+            <div className="table-play">
+              <div className="table-felt">
+                <PokerTableSurface />
+              </div>
+
+              <div className="table-center">{tableCenter}</div>
+
+              {feltOverlay}
+              {seats}
+              <ItemFlightLayer flights={flights} />
             </div>
-
-            <div className="table-center">{tableCenter}</div>
-
-            {feltOverlay}
-            {seats}
-            <ItemFlightLayer flights={flights} />
           </div>
         </div>
-      </div>
-      {footer}
-    </section>
+        {footer}
+        {/* Above footer (hole cards / AI hint) so seat menus stay tappable and visible. */}
+        <div className="table-social-overlay" ref={setOverlay} />
+      </section>
+    </TableSocialOverlayProvider>
   );
 }

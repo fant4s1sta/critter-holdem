@@ -45,15 +45,18 @@ assert.doesNotMatch(
   /\.game-footer\s+\.game-action-panel\s*\{[^}]*pointer-events:\s*auto/,
 );
 
-// When the item/emote picker lifts .table-play above the footer, hole cards
-// and status text must stay painted on top of the felt.
-assert.match(
-  declarationsFor(".lobby-table-shell:has(.emote-picker-panel) .game-footer"),
-  /z-index:\s*10/,
-);
+// When flights / hit fx lift .table-play above the footer, hole cards and
+// status text must stay painted on top of the felt.
 assert.match(
   declarationsFor(".lobby-table-shell:has(.item-flight) .game-footer"),
   /z-index:\s*10/,
+);
+
+// Portaled seat menus live in .table-social-overlay above the footer.
+assert.match(declarationsFor(".table-social-overlay"), /z-index:\s*20/);
+assert.match(
+  declarationsFor(".table-social-overlay"),
+  /pointer-events:\s*none/,
 );
 
 console.log("footer-pointer-events.test.ts: ok");
