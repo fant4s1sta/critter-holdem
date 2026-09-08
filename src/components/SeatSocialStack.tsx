@@ -23,6 +23,7 @@ export function SeatSocialStack({
   onThrowItem,
   avatarClassName,
   name,
+  badge,
   children,
 }: {
   playerId: string;
@@ -38,6 +39,8 @@ export function SeatSocialStack({
   onThrowItem: (itemId: TableItemId) => void;
   avatarClassName: string;
   name: string;
+  /** Blind/host tag — rendered inside the stack so hit FX can cover it. */
+  badge?: ReactNode;
   children: ReactNode;
 }) {
   const title = canUseSocial
@@ -72,6 +75,7 @@ export function SeatSocialStack({
               : ""
       }`}
     >
+      {badge}
       {emote ? (
         <EmoteBubble key={emote.at} emoteId={emote.emoteId} at={emote.at} />
       ) : null}

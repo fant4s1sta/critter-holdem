@@ -415,12 +415,14 @@ export function SkillRoomClient({
                         player.id === me?.id ? " px-seat-active" : ""
                       }${player.connected ? "" : " opacity-55"}`}
                       name={player.name}
+                      badge={
+                        player.isHost ? (
+                          <span className="px-seat-blind is-host">房主</span>
+                        ) : null
+                      }
                     >
                       <AnimalAvatar id={player.avatarId} size="fill" priority="high" />
                     </SeatSocialStack>
-                    {player.isHost ? (
-                      <span className="px-seat-blind is-host">房主</span>
-                    ) : null}
                     <p className="px-seat-name">{player.name}</p>
                     <p className="px-seat-chips lobby-seat-meta">
                       {player.aiControlled
@@ -465,6 +467,15 @@ export function SkillRoomClient({
                         : ""
                     } ${player.folded ? "opacity-45" : ""}`}
                     name={player.name}
+                    badge={
+                      seatBadge ? (
+                        <span
+                          className={`px-seat-blind ${seatBadge.tone === "bb" ? "is-bb" : ""}`}
+                        >
+                          {seatBadge.label}
+                        </span>
+                      ) : null
+                    }
                   >
                     <AnimalAvatar
                       id={player.avatarId}
@@ -477,13 +488,6 @@ export function SkillRoomClient({
                       }
                     />
                   </SeatSocialStack>
-                  {seatBadge ? (
-                    <span
-                      className={`px-seat-blind ${seatBadge.tone === "bb" ? "is-bb" : ""}`}
-                    >
-                      {seatBadge.label}
-                    </span>
-                  ) : null}
                   <p className="px-seat-name">{player.name}</p>
                   <p className="px-seat-chips">{player.chips}</p>
                 </div>
