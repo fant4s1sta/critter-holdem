@@ -3050,6 +3050,20 @@ svg.playing-card {
   z-index: 8;
 }
 
+/* Lifting .table-play above the footer also covers hole cards / AI hint /
+   status text that sit on the felt. Keep footers above the elevated felt;
+   their empty chrome is pointer-events:none so seat menus still show through. */
+.lobby-table-shell:has(.emote-picker-panel) .game-footer,
+.lobby-table-shell:has(.seat-bomb-hit) .game-footer,
+.lobby-table-shell:has(.seat-item-hit) .game-footer,
+.lobby-table-shell:has(.item-flight) .game-footer,
+.lobby-table-shell:has(.emote-picker-panel) .lobby-table-footer,
+.lobby-table-shell:has(.seat-bomb-hit) .lobby-table-footer,
+.lobby-table-shell:has(.seat-item-hit) .lobby-table-footer,
+.lobby-table-shell:has(.item-flight) .lobby-table-footer {
+  z-index: 10;
+}
+
 .table-play .absolute:has(.seat-bomb-hit),
 .table-play .absolute:has(.seat-item-hit) {
   z-index: 16;

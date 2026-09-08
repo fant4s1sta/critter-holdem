@@ -45,4 +45,15 @@ assert.doesNotMatch(
   /\.game-footer\s+\.game-action-panel\s*\{[^}]*pointer-events:\s*auto/,
 );
 
+// When the item/emote picker lifts .table-play above the footer, hole cards
+// and status text must stay painted on top of the felt.
+assert.match(
+  declarationsFor(".lobby-table-shell:has(.emote-picker-panel) .game-footer"),
+  /z-index:\s*10/,
+);
+assert.match(
+  declarationsFor(".lobby-table-shell:has(.item-flight) .game-footer"),
+  /z-index:\s*10/,
+);
+
 console.log("footer-pointer-events.test.ts: ok");
