@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_ASSET_VERSION: assetVersion,
   },
   async headers() {
+    // Dev needs short-lived /_next/static caches; long-lived headers break HMR.
+    if (process.env.NODE_ENV !== "production") return [];
     return [
       {
         source: "/:all*(webp|png|jpg|jpeg|gif|svg|ico|woff|woff2)",
