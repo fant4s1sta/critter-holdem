@@ -10,15 +10,16 @@ export const EMOTE_STICKER_SRC = assetSrc("/emotes/stickers.webp");
 export const EMOTE_SPRITE_COLS = 4;
 export const EMOTE_SPRITE_ROWS = 2;
 
+/** Sprite cells match public/emotes/stickers.webp (4×2 animal sheet). */
 export const TABLE_EMOTES = [
-  { id: "big", label: "我牌很大", col: 0, row: 0 },
-  { id: "scared", label: "吓坏我了", col: 1, row: 0 },
-  { id: "fold", label: "弃牌了", col: 2, row: 0 },
-  { id: "allin", label: "All in", col: 3, row: 0 },
+  { id: "big", label: "我牌很大", col: 1, row: 1 },
+  { id: "scared", label: "吓坏我了", col: 2, row: 1 },
+  { id: "fold", label: "弃牌了", col: 1, row: 0 },
+  { id: "allin", label: "All in", col: 2, row: 0 },
   { id: "raise", label: "加注", col: 0, row: 1 },
-  { id: "bless", label: "保佑好牌", col: 1, row: 1 },
-  { id: "chicken", label: "别偷我鸡", col: 2, row: 1 },
-  { id: "junk", label: "什么破牌", col: 3, row: 1 },
+  { id: "bless", label: "保佑好牌", col: 0, row: 0 },
+  { id: "chicken", label: "别偷我鸡", col: 3, row: 1 },
+  { id: "junk", label: "什么破牌", col: 3, row: 0 },
 ] as const;
 
 export type EmoteId = (typeof TABLE_EMOTES)[number]["id"];
