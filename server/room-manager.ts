@@ -1131,6 +1131,7 @@ export class RoomManager {
       contenderCount,
       playerBases,
       game,
+      serverNow: Date.now(),
       meta: {
         code: room.code,
         status: room.status,
@@ -1243,6 +1244,7 @@ export class RoomManager {
       players,
       you,
       game: frame.game,
+      serverNow: frame.serverNow,
     };
   }
 

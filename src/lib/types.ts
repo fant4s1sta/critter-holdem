@@ -190,6 +190,8 @@ export interface RoomPublicState {
   } | null;
   game: TexasHoldemPublicState | null;
   message?: string;
+  /** Server wall clock at emit time — clients calibrate countdowns against it. */
+  serverNow?: number;
 }
 
 /** Partial player update keyed by id */
@@ -205,6 +207,7 @@ export interface RoomPatch {
   players?: PublicPlayerPatch[];
   you?: RoomPublicState["you"];
   message?: string;
+  serverNow?: number;
 }
 
 export type RoomBroadcastPayload =

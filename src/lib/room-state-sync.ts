@@ -169,6 +169,10 @@ export function diffRoomState(
     }
   }
 
+  if (changed && next.serverNow !== undefined) {
+    patch.serverNow = next.serverNow;
+  }
+
   return changed ? patch : null;
 }
 
@@ -186,6 +190,7 @@ export function mergeRoomPatch(
   if (patch.status !== undefined) next.status = patch.status;
   if (patch.hostId !== undefined) next.hostId = patch.hostId;
   if (patch.message !== undefined) next.message = patch.message;
+  if (patch.serverNow !== undefined) next.serverNow = patch.serverNow;
 
   if (patch.game !== undefined) {
     if (patch.game === null) {

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  type GameActionPayload,
   type PublicPlayer,
   type RoomPublicState,
 } from "@/lib/types";
@@ -19,6 +18,9 @@ import { getSocket } from "@/lib/socket";
 import { useRoomConnection } from "@/lib/use-room-connection";
 import { useAvatarSelection } from "@/lib/use-avatar-selection";
 import { useAddBot } from "@/lib/use-add-bot";
+import { usePendingAction } from "@/lib/use-pending-action";
+import { useStartGame } from "@/lib/use-start-game";
+import { serverNow } from "@/lib/server-clock";
 import { useTableSocial } from "@/lib/use-table-social";
 import { EMOTE_COOLDOWN_MS } from "@/lib/emotes";
 import { getSeatLayout, emotePickerPlacement, seatBadgeForSeat } from "@/lib/seat-layout";
@@ -55,7 +57,7 @@ export function SkillRoomClient({
   const [raiseTo, setRaiseTo] = useState(
     () => initialRoom?.you?.minRaiseTo || initialRoom?.you?.callAmount || 0,
   );
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => serverNow());
   const [identity, setIdentity] =
     useState<ReturnType<typeof getRoomSession>>(null);
   const [ready, setReady] = useState(false);
@@ -126,7 +128,7 @@ export function SkillRoomClient({
     // Lobby has no turn clock; ticking here re-rendered every chip filter
     // layer 4×/sec and looked like avatar-frame jitter while picking.
     if (room?.status === "lobby") return;
-    const t = setInterval(() => setNow(Date.now()), 250);
+    const t = setInterval(() => setNow(serverNow()), 250);
     return () => clearInterval(t);
   }, [room?.status]);
 
@@ -135,6 +137,20 @@ export function SkillRoomClient({
     enabled: ready && !!identity,
     roomCode,
     identity,
+    onError: onRoomError,
+  });
+
+  const { emitAction, pendingAction, actionLocked } = usePendingAction({
+    roomCode,
+    identity,
+    room,
+    onError: onRoomError,
+  });
+
+  const { startGame, starting, canStart } = useStartGame({
+    roomCode,
+    identity,
+    room,
     onError: onRoomError,
   });
 
@@ -158,37 +174,6 @@ export function SkillRoomClient({
     }
   }, [identity, ready]);
 
-  function emitAction(action: GameActionPayload) {
-    if (!identity) return;
-    getSocket().emit(
-      "game_action",
-      {
-        code: roomCode,
-        playerId: identity.playerId,
-        secret: identity.secret,
-        action,
-      },
-      (res: { ok: boolean; error?: string }) => {
-        if (!res.ok) onRoomError(res.error || "操作失败");
-      },
-    );
-  }
-
-  function startGame() {
-    if (!identity) return;
-    getSocket().emit(
-      "start_game",
-      {
-        code: roomCode,
-        playerId: identity.playerId,
-        secret: identity.secret,
-      },
-      (res: { ok: boolean; error?: string }) => {
-        if (!res.ok) onRoomError(res.error || "无法开始");
-      },
-    );
-  }
-
   function emitSkill(
     payload: {
       targetPlayerId?: string;
@@ -198,6 +183,9 @@ export function SkillRoomClient({
     reportError?: (message: string) => void,
   ) {
     if (!identity) return;
+    // Paint the cooldown wipe now (same as emotes/items); roll back on failure.
+    const castAt = Date.now();
+    setSkillCooldownUntil(castAt + EMOTE_COOLDOWN_MS);
     getSocket().emit(
       "use_skill",
       {
@@ -208,10 +196,10 @@ export function SkillRoomClient({
       },
       (res: { ok: boolean; error?: string }) => {
         if (!res.ok) {
+          setSkillCooldownUntil((current) => (current === castAt + EMOTE_COOLDOWN_MS ? 0 : current));
           reportError?.(res.error || "技能发动失败");
           return;
         }
-        setSkillCooldownUntil(Date.now() + EMOTE_COOLDOWN_MS);
         const skillId = me?.avatarId ? getAnimalSkill(me.avatarId).skillId : "";
         if (skillId !== "scout") setSkillOpen(false);
       },
@@ -529,10 +517,10 @@ export function SkillRoomClient({
                     <button
                       type="button"
                       onClick={startGame}
-                      disabled={room.players.length < 2}
+                      disabled={!canStart}
                       className="lobby-cta text-sm"
                     >
-                      开始对局
+                      {starting ? "开始中…" : "开始对局"}
                     </button>
                   </div>
                 ) : null}
@@ -606,6 +594,9 @@ export function SkillRoomClient({
                     statusText = `下一轮 · ${nextHandRemain}秒`;
                   } else if (room.you?.spectator || me?.away) {
                     statusText = null;
+                  } else if (pendingAction) {
+                    statusText = "已提交，等待服务器…";
+                    statusMuted = true;
                   } else if (room.you?.canAct) {
                     statusText = `轮到你${turnRemain != null ? ` · ${turnRemain}秒` : ""}`;
                   } else {
@@ -638,7 +629,7 @@ export function SkillRoomClient({
                       <span>下注 {raiseTo}</span>
                       <input
                         type="range"
-                        disabled={!room.you?.canAct}
+                        disabled={actionLocked}
                         min={room.you?.minRaiseTo ?? 0}
                         max={Math.max(
                           room.you?.minRaiseTo ?? 0,
@@ -654,7 +645,7 @@ export function SkillRoomClient({
                     <div className="grid grid-cols-3 gap-1.5">
                       <button
                         type="button"
-                        disabled={!room.you?.canAct}
+                        disabled={actionLocked}
                         className="lobby-btn-danger lobby-btn-sm"
                         onClick={() => emitAction({ type: "fold" })}
                       >
@@ -663,7 +654,7 @@ export function SkillRoomClient({
                       {callAmount > 0 ? (
                         <button
                           type="button"
-                          disabled={!room.you?.canAct}
+                          disabled={actionLocked}
                           className="lobby-btn lobby-btn-sm"
                           onClick={() => emitAction({ type: "call" })}
                         >
@@ -672,7 +663,7 @@ export function SkillRoomClient({
                       ) : (
                         <button
                           type="button"
-                          disabled={!room.you?.canAct}
+                          disabled={actionLocked}
                           className="lobby-btn lobby-btn-sm"
                           onClick={() => emitAction({ type: "check" })}
                         >
@@ -681,7 +672,7 @@ export function SkillRoomClient({
                       )}
                       <button
                         type="button"
-                        disabled={!room.you?.canAct}
+                        disabled={actionLocked}
                         className="lobby-cta lobby-btn-sm"
                         onClick={() =>
                           emitAction({
@@ -695,7 +686,7 @@ export function SkillRoomClient({
                     </div>
                     <button
                       type="button"
-                      disabled={!room.you?.canAct}
+                      disabled={actionLocked}
                       className="lobby-btn-allin lobby-btn-sm w-full"
                       onClick={() => emitAction({ type: "all-in" })}
                     >

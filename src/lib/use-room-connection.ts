@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { getSocket } from "@/lib/socket";
 import { mergeRoomPatch } from "@/lib/room-state-sync";
+import { recordServerClock } from "@/lib/server-clock";
 import type { PlayerIdentity, RoomPatch, RoomPublicState } from "@/lib/types";
 
 type ReconnectAck = {
@@ -46,6 +47,7 @@ export function useRoomConnection(opts: {
     }
 
     const applyFull = (state: RoomPublicState) => {
+      recordServerClock(state.serverNow);
       lastRevRef.current = state.rev ?? 0;
       roomRef.current = state;
       onState(state);
@@ -95,6 +97,7 @@ export function useRoomConnection(opts: {
         return;
       }
 
+      recordServerClock(patch.serverNow);
       const merged = mergeRoomPatch(roomRef.current, patch);
       lastRevRef.current = patch.rev;
       roomRef.current = merged;

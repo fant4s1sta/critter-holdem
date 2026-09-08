@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { GameActionPayload, PublicPlayer, RoomPublicState } from "@/lib/types";
+import type { PublicPlayer, RoomPublicState } from "@/lib/types";
 import { getCardRenderKey } from "@/lib/card-visuals";
 import { getViewerCallAmount, recomputeViewerYou } from "@/lib/player-action-ui";
 import { pickFinalWinners } from "@/lib/final-winners";
@@ -11,6 +11,9 @@ import { isRoomRevisionConflict } from "@/lib/room-errors";
 import { useRoomConnection } from "@/lib/use-room-connection";
 import { useAvatarSelection } from "@/lib/use-avatar-selection";
 import { useAddBot } from "@/lib/use-add-bot";
+import { usePendingAction } from "@/lib/use-pending-action";
+import { useStartGame } from "@/lib/use-start-game";
+import { serverNow } from "@/lib/server-clock";
 import { useTableSocial } from "@/lib/use-table-social";
 import { getSeatLayout, emotePickerPlacement, seatBadgeForSeat } from "@/lib/seat-layout";
 import { AnimalAvatar } from "./AnimalAvatar";
@@ -46,7 +49,7 @@ export function RoomClient({
   const [raiseTo, setRaiseTo] = useState(
     () => initialRoom?.you?.minRaiseTo || initialRoom?.you?.callAmount || 0,
   );
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => serverNow());
   const [identity, setIdentity] =
     useState<ReturnType<typeof getRoomSession>>(null);
   const [ready, setReady] = useState(false);
@@ -112,7 +115,7 @@ export function RoomClient({
     // Lobby has no turn clock; ticking here re-rendered every chip filter
     // layer 4×/sec and looked like avatar-frame jitter while picking.
     if (room?.status === "lobby") return;
-    const t = setInterval(() => setNow(Date.now()), 250);
+    const t = setInterval(() => setNow(serverNow()), 250);
     return () => clearInterval(t);
   }, [room?.status]);
 
@@ -124,6 +127,19 @@ export function RoomClient({
     onError: onRoomError,
   });
 
+  const { emitAction, pendingAction, actionLocked } = usePendingAction({
+    roomCode,
+    identity,
+    room,
+    onError: onRoomError,
+  });
+
+  const { startGame, starting, canStart } = useStartGame({
+    roomCode,
+    identity,
+    room,
+    onError: onRoomError,
+  });
 
   useRoomConnection({
     enabled: ready && !!identity,
@@ -141,37 +157,6 @@ export function RoomClient({
       setError("本地没有该房间的身份信息。请从首页加入或创建。");
     }
   }, [identity, ready]);
-
-  function emitAction(action: GameActionPayload) {
-    if (!identity) return;
-    getSocket().emit(
-      "game_action",
-      {
-        code: roomCode,
-        playerId: identity.playerId,
-        secret: identity.secret,
-        action,
-      },
-      (res: { ok: boolean; error?: string }) => {
-        if (!res.ok) onRoomError(res.error || "操作失败");
-      },
-    );
-  }
-
-  function startGame() {
-    if (!identity) return;
-    getSocket().emit(
-      "start_game",
-      {
-        code: roomCode,
-        playerId: identity.playerId,
-        secret: identity.secret,
-      },
-      (res: { ok: boolean; error?: string }) => {
-        if (!res.ok) onRoomError(res.error || "无法开始");
-      },
-    );
-  }
 
   function leave() {
     if (!identity) {
@@ -479,10 +464,10 @@ export function RoomClient({
                     <button
                       type="button"
                       onClick={startGame}
-                      disabled={room.players.length < 2}
+                      disabled={!canStart}
                       className="lobby-cta text-sm"
                     >
-                      开始对局
+                      {starting ? "开始中…" : "开始对局"}
                     </button>
                   </div>
                 ) : null}
@@ -528,7 +513,9 @@ export function RoomClient({
                 </div>
                 {nextHandRemain != null ? (
                   <p className="game-status mb-2">下一轮 · {nextHandRemain}秒</p>
-                ) : room.you?.spectator || me?.away ? null : room.you?.canAct ? (
+                ) : room.you?.spectator || me?.away ? null : pendingAction ? (
+                  <p className="game-status is-muted mb-2">已提交，等待服务器…</p>
+                ) : room.you?.canAct ? (
                   <p className="game-status mb-2">
                     轮到你{turnRemain != null ? ` · ${turnRemain}秒` : ""}
                   </p>
@@ -550,7 +537,7 @@ export function RoomClient({
                       <span>下注 {raiseTo}</span>
                       <input
                         type="range"
-                        disabled={!room.you?.canAct}
+                        disabled={actionLocked}
                         min={room.you?.minRaiseTo ?? 0}
                         max={Math.max(
                           room.you?.minRaiseTo ?? 0,
@@ -566,7 +553,7 @@ export function RoomClient({
                     <div className="grid grid-cols-3 gap-1.5">
                       <button
                         type="button"
-                        disabled={!room.you?.canAct}
+                        disabled={actionLocked}
                         className="lobby-btn-danger lobby-btn-sm"
                         onClick={() => emitAction({ type: "fold" })}
                       >
@@ -575,7 +562,7 @@ export function RoomClient({
                       {(callAmount) > 0 ? (
                         <button
                           type="button"
-                          disabled={!room.you?.canAct}
+                          disabled={actionLocked}
                           className="lobby-btn lobby-btn-sm"
                           onClick={() => emitAction({ type: "call" })}
                         >
@@ -584,7 +571,7 @@ export function RoomClient({
                       ) : (
                         <button
                           type="button"
-                          disabled={!room.you?.canAct}
+                          disabled={actionLocked}
                           className="lobby-btn lobby-btn-sm"
                           onClick={() => emitAction({ type: "check" })}
                         >
@@ -593,7 +580,7 @@ export function RoomClient({
                       )}
                       <button
                         type="button"
-                        disabled={!room.you?.canAct}
+                        disabled={actionLocked}
                         className="lobby-cta lobby-btn-sm"
                         onClick={() =>
                           emitAction({
@@ -607,7 +594,7 @@ export function RoomClient({
                     </div>
                     <button
                       type="button"
-                      disabled={!room.you?.canAct}
+                      disabled={actionLocked}
                       className="lobby-btn-allin lobby-btn-sm w-full"
                       onClick={() => emitAction({ type: "all-in" })}
                     >
