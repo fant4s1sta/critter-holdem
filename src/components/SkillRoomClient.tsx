@@ -402,10 +402,7 @@ export function SkillRoomClient({
             const canUseSocial = Boolean(me && !room.you?.spectator);
             const selfCooldownUntil =
               player.id === me?.id
-                ? latestCooldownUntil(
-                    coolingDown ? cooldownUntil : 0,
-                    skillCooldownUntil,
-                  )
+                ? latestCooldownUntil(cooldownUntil, skillCooldownUntil)
                 : 0;
             if (inLobby) {
               return (

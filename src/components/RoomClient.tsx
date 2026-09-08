@@ -367,9 +367,7 @@ export function RoomClient({
                       canUseSocial={canUseSocial}
                       isSelf={player.id === me?.id}
                       coolingDown={coolingDown}
-                      cooldownUntil={
-                        player.id === me?.id && coolingDown ? cooldownUntil : 0
-                      }
+                      cooldownUntil={player.id === me?.id ? cooldownUntil : 0}
                       placement={pickerPlacement}
                       emote={emote}
                       itemHit={itemHit}
@@ -415,9 +413,7 @@ export function RoomClient({
                     canUseSocial={canUseSocial}
                     isSelf={player.id === me?.id}
                     coolingDown={coolingDown}
-                    cooldownUntil={
-                      player.id === me?.id && coolingDown ? cooldownUntil : 0
-                    }
+                    cooldownUntil={player.id === me?.id ? cooldownUntil : 0}
                     placement={pickerPlacement}
                     emote={emote}
                     itemHit={itemHit}

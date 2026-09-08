@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { EMOTE_COOLDOWN_MS } from "@/lib/emotes";
 
 /**
- * Radial cooldown wipe over a circular avatar (no clock hand).
- * `until` is an absolute timestamp; the ring remounts whenever it changes.
+ * Radial cooldown wipe over a circular avatar.
+ * Uses SVG stroke-dashoffset (smooth under parent re-renders) and a fixed
+ * duration — no negative animation-delay seeking that jumps on each tick.
  */
 export function AvatarCooldownRing({
   until,
@@ -14,37 +15,33 @@ export function AvatarCooldownRing({
   until: number;
   durationMs?: number;
 }) {
-  const [active, setActive] = useState(false);
+  const [alive, setAlive] = useState(() => until > Date.now());
 
   useEffect(() => {
     const remaining = until - Date.now();
     if (!(until > 0) || remaining <= 0) {
-      setActive(false);
+      setAlive(false);
       return;
     }
-    setActive(true);
-    const timer = setTimeout(() => setActive(false), remaining);
+    setAlive(true);
+    const timer = setTimeout(() => setAlive(false), remaining);
     return () => clearTimeout(timer);
   }, [until]);
 
-  if (!active) return null;
-
-  const elapsed = Math.max(0, durationMs - (until - Date.now()));
-  const delayMs = -Math.min(elapsed, durationMs - 16);
+  if (!alive) return null;
 
   return (
-    <div
-      className="avatar-cooldown"
-      key={until}
-      style={
-        {
-          "--cooldown-ms": `${durationMs}ms`,
-          "--cooldown-delay": `${delayMs}ms`,
-        } as CSSProperties
-      }
-      aria-hidden
-    >
-      <span className="avatar-cooldown-wedge" />
+    <div className="avatar-cooldown" key={until} aria-hidden>
+      <svg className="avatar-cooldown-svg" viewBox="0 0 100 100">
+        <circle
+          className="avatar-cooldown-pie"
+          cx="50"
+          cy="50"
+          r="50"
+          pathLength={100}
+          style={{ animationDuration: `${durationMs}ms` }}
+        />
+      </svg>
     </div>
   );
 }
