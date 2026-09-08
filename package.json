@@ -19,6 +19,7 @@
     "test:items": "tsx src/lib/table-items.test.ts",
     "test:footer-hit": "tsx src/lib/footer-pointer-events.test.ts",
     "test:social-echo": "tsx src/lib/social-echo.test.ts",
+    "test:avatar-cooldown": "tsx src/lib/avatar-cooldown.test.ts",
     "test:skill": "tsx server/games/skill-mode/skill-runtime.test.ts"
   },
   "dependencies": {

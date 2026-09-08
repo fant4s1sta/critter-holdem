@@ -20,7 +20,9 @@ import { useRoomConnection } from "@/lib/use-room-connection";
 import { useAvatarSelection } from "@/lib/use-avatar-selection";
 import { useAddBot } from "@/lib/use-add-bot";
 import { useTableSocial } from "@/lib/use-table-social";
+import { EMOTE_COOLDOWN_MS } from "@/lib/emotes";
 import { getSeatLayout, emotePickerPlacement, seatBadgeForSeat } from "@/lib/seat-layout";
+import { latestCooldownUntil } from "./AvatarCooldownRing";
 import { CommunityCards } from "./CommunityCards";
 import { DealerSpeech } from "./DealerSpeech";
 import { SeatSocialStack } from "./SeatSocialStack";
@@ -128,12 +130,16 @@ export function SkillRoomClient({
     return () => clearInterval(t);
   }, [room?.status]);
 
-  const { bubbles, hits, flights, sendEmote, throwItem, coolingDown } = useTableSocial({
+  const { bubbles, hits, flights, sendEmote, throwItem, coolingDown, cooldownUntil } =
+    useTableSocial({
     enabled: ready && !!identity,
     roomCode,
     identity,
     onError: onRoomError,
   });
+
+  /** Local-only skill cast wipe — never synced to other clients. */
+  const [skillCooldownUntil, setSkillCooldownUntil] = useState(0);
 
   useRoomConnection({
     enabled: ready && !!identity,
@@ -205,6 +211,7 @@ export function SkillRoomClient({
           reportError?.(res.error || "技能发动失败");
           return;
         }
+        setSkillCooldownUntil(Date.now() + EMOTE_COOLDOWN_MS);
         const skillId = me?.avatarId ? getAnimalSkill(me.avatarId).skillId : "";
         if (skillId !== "scout") setSkillOpen(false);
       },
@@ -393,6 +400,13 @@ export function SkillRoomClient({
             const itemHit = hits[player.id];
             const pickerPlacement = emotePickerPlacement(cupIndex);
             const canUseSocial = Boolean(me && !room.you?.spectator);
+            const selfCooldownUntil =
+              player.id === me?.id
+                ? latestCooldownUntil(
+                    coolingDown ? cooldownUntil : 0,
+                    skillCooldownUntil,
+                  )
+                : 0;
             if (inLobby) {
               return (
                 <div
@@ -406,6 +420,7 @@ export function SkillRoomClient({
                       canUseSocial={canUseSocial}
                       isSelf={player.id === me?.id}
                       coolingDown={coolingDown}
+                      cooldownUntil={selfCooldownUntil}
                       placement={pickerPlacement}
                       emote={emote}
                       itemHit={itemHit}
@@ -451,6 +466,7 @@ export function SkillRoomClient({
                     canUseSocial={canUseSocial}
                     isSelf={player.id === me?.id}
                     coolingDown={coolingDown}
+                    cooldownUntil={selfCooldownUntil}
                     placement={pickerPlacement}
                     emote={emote}
                     itemHit={itemHit}

@@ -5,6 +5,7 @@ import type { EmoteId } from "@/lib/emotes";
 import type { EmotePickerPlacement } from "@/lib/seat-layout";
 import type { TableItemId } from "@/lib/table-items";
 import type { SeatEmoteBubble, SeatItemHit } from "@/lib/use-table-social";
+import { AvatarCooldownRing } from "./AvatarCooldownRing";
 import { EmotePicker, SeatEmoteBubble as EmoteBubble } from "./EmotePicker";
 import { ItemHitFx } from "./BombHit";
 import { ItemPicker } from "./ItemPicker";
@@ -14,6 +15,7 @@ export function SeatSocialStack({
   canUseSocial,
   isSelf,
   coolingDown,
+  cooldownUntil = 0,
   placement,
   emote,
   itemHit,
@@ -27,6 +29,8 @@ export function SeatSocialStack({
   canUseSocial: boolean;
   isSelf: boolean;
   coolingDown: boolean;
+  /** Absolute timestamp — local-only clock wipe on this seat's avatar. */
+  cooldownUntil?: number;
   placement: EmotePickerPlacement;
   emote?: SeatEmoteBubble;
   itemHit?: SeatItemHit;
@@ -51,6 +55,7 @@ export function SeatSocialStack({
       aria-label={title}
     >
       {children}
+      {cooldownUntil > 0 ? <AvatarCooldownRing until={cooldownUntil} /> : null}
     </div>
   );
 
