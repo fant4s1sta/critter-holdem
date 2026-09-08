@@ -5,10 +5,14 @@ import QRCode from "qrcode";
 import { BRAND_LOGO_PNG_SRC } from "@/lib/critical-images";
 import { buildInviteUrl } from "@/lib/invite-url";
 
-const QR_SIZE = 200;
-const LOGO_PLATE_W = 58;
-const LOGO_PLATE_H = 44;
-const LOGO_PAD = 4;
+/** On-screen / CSS size (design px). */
+const QR_DISPLAY_SIZE = 200;
+/** Bake denser so Retina screens and WeChat long-press saves stay sharp. */
+const QR_PIXEL_RATIO = 3;
+const QR_SIZE = QR_DISPLAY_SIZE * QR_PIXEL_RATIO;
+const LOGO_PLATE_W = 58 * QR_PIXEL_RATIO;
+const LOGO_PLATE_H = 44 * QR_PIXEL_RATIO;
+const LOGO_PAD = 4 * QR_PIXEL_RATIO;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -54,24 +58,28 @@ async function buildBrandedInviteQr(roomCode: string): Promise<string> {
   const ctx = canvas.getContext("2d");
   if (!ctx) return qrDataUrl;
 
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
   const qrImage = await loadImage(qrDataUrl);
   ctx.drawImage(qrImage, 0, 0, QR_SIZE, QR_SIZE);
 
   const plateX = (QR_SIZE - LOGO_PLATE_W) / 2;
   const plateY = (QR_SIZE - LOGO_PLATE_H) / 2;
+  const plateRadius = 8 * QR_PIXEL_RATIO;
 
   ctx.save();
   ctx.shadowColor = "rgba(90, 34, 12, 0.3)";
   ctx.shadowBlur = 0;
-  ctx.shadowOffsetY = 2;
-  fillRoundRect(ctx, plateX, plateY, LOGO_PLATE_W, LOGO_PLATE_H, 8);
+  ctx.shadowOffsetY = 2 * QR_PIXEL_RATIO;
+  fillRoundRect(ctx, plateX, plateY, LOGO_PLATE_W, LOGO_PLATE_H, plateRadius);
   ctx.fillStyle = "#fff8ee";
   ctx.fill();
   ctx.restore();
 
-  fillRoundRect(ctx, plateX, plateY, LOGO_PLATE_W, LOGO_PLATE_H, 8);
+  fillRoundRect(ctx, plateX, plateY, LOGO_PLATE_W, LOGO_PLATE_H, plateRadius);
   ctx.strokeStyle = "#c45e1c";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 2 * QR_PIXEL_RATIO;
   ctx.stroke();
 
   try {
@@ -128,8 +136,8 @@ export function InviteQrCode({ roomCode }: { roomCode: string }) {
       <img
         src={dataUrl}
         alt={`房间 ${roomCode} 邀请二维码`}
-        width={QR_SIZE}
-        height={QR_SIZE}
+        width={QR_DISPLAY_SIZE}
+        height={QR_DISPLAY_SIZE}
         className="invite-qr"
         draggable={false}
       />
