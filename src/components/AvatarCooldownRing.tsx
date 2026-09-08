@@ -4,7 +4,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { EMOTE_COOLDOWN_MS } from "@/lib/emotes";
 
 /**
- * Clock-hand cooldown wipe over a circular avatar.
+ * Radial cooldown wipe over a circular avatar (no clock hand).
  * `until` is an absolute timestamp; the ring remounts whenever it changes.
  */
 export function AvatarCooldownRing({
@@ -45,8 +45,6 @@ export function AvatarCooldownRing({
       aria-hidden
     >
       <span className="avatar-cooldown-wedge" />
-      <span className="avatar-cooldown-hand" />
-      <span className="avatar-cooldown-hub" />
     </div>
   );
 }
