@@ -500,12 +500,25 @@ body {
   font-size: 0.88rem;
 }
 
+/* Pulled up over the table so hole cards sit near the felt. Empty footer
+   chrome must not steal taps from bottom seats (3–6) — only interactive
+   widgets re-enable pointer events. Accidental hits on the fold/action
+   panel were also folding the hand and clearing the cards from play. */
 .game-footer {
   position: relative;
   z-index: 3;
   flex-shrink: 0;
   width: 100%;
   margin-top: calc(24px + 1.7875rem - 200px);
+  pointer-events: none;
+}
+
+.game-footer .win-rate-hint,
+.game-footer .skill-cast-btn,
+.game-footer .game-action-panel button,
+.game-footer .game-action-panel input,
+.game-footer .game-action-panel label {
+  pointer-events: auto;
 }
 
 .game-footer > .game-status {
@@ -2405,6 +2418,7 @@ body {
   padding-bottom: max(0.75rem, var(--safe-bottom));
 }
 
+/* Same overlay pattern as .game-footer — pass taps through to seats. */
 .lobby-table-footer {
   flex-shrink: 0;
   position: relative;
@@ -2412,6 +2426,13 @@ body {
   width: 100%;
   margin-top: calc(24px + 1.7875rem);
   transform: translateY(-200px);
+  pointer-events: none;
+}
+
+.lobby-table-footer .lobby-avatar-picker,
+.lobby-table-footer .lobby-btn,
+.lobby-table-footer .lobby-cta {
+  pointer-events: auto;
 }
 
 .lobby-table-footer .lobby-animal-grid {

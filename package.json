@@ -17,6 +17,7 @@
     "test:reveal": "tsx src/lib/reveal-hole-cards.test.ts",
     "test:equity": "tsx src/lib/equity.test.ts",
     "test:items": "tsx src/lib/table-items.test.ts",
+    "test:footer-hit": "tsx src/lib/footer-pointer-events.test.ts",
     "test:skill": "tsx server/games/skill-mode/skill-runtime.test.ts"
   },
   "dependencies": {
