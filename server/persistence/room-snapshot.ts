@@ -26,6 +26,7 @@ type PersistedSkillState = {
   privateScout: [string, HandSkillState["privateScout"] extends Map<string, infer V> ? V : never][];
   privateScoutSlot?: [string, number][];
   fraudEscrow: [string, number][];
+  oxInvestedBaseline?: [string, number][];
   lastEvent: HandSkillState["lastEvent"];
   handWon: [string, number][];
 };
@@ -113,6 +114,7 @@ function serializeSkillState(state: HandSkillState): PersistedSkillState {
     privateScout: [...state.privateScout],
     privateScoutSlot: [...state.privateScoutSlot],
     fraudEscrow: [...state.fraudEscrow],
+    oxInvestedBaseline: [...state.oxInvestedBaseline],
     lastEvent: state.lastEvent,
     handWon: [...state.handWon],
   };
@@ -134,6 +136,7 @@ function restoreSkillState(snapshot: PersistedSkillState): HandSkillState {
     privateScout: new Map(snapshot.privateScout),
     privateScoutSlot: new Map(snapshot.privateScoutSlot ?? []),
     fraudEscrow: new Map(snapshot.fraudEscrow),
+    oxInvestedBaseline: new Map(snapshot.oxInvestedBaseline ?? []),
     lastEvent: snapshot.lastEvent,
     handWon: new Map(snapshot.handWon),
   };

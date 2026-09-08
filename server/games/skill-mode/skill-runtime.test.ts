@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { TexasHoldemEngine } from "../texas-holdem/engine";
-import { createHandSkillState, useActiveSkill } from "./skill-runtime";
+import {
+  applyCowRuminate,
+  createHandSkillState,
+  useActiveSkill,
+} from "./skill-runtime";
 
 const engine = new TexasHoldemEngine({ turnMs: 60_000 });
 engine.startHand([
@@ -64,6 +68,35 @@ assert.throws(() => {
       payload: { targetPlayerId: "mouse" },
     });
   }, /不能选择自己/);
+}
+
+{
+  // Ox ruminate: 10% of chips invested since last street, not of stack.
+  const oxEngine = new TexasHoldemEngine({ turnMs: 60_000 });
+  oxEngine.startHand([
+    { id: "ox", name: "大牛", seat: 0, chips: 1000, away: false },
+    { id: "dog", name: "小狗", seat: 1, chips: 1000, away: false },
+  ]);
+  const ox = oxEngine.getPlayer("ox")!;
+  const investedPreflop = ox.totalBet;
+  assert.ok(investedPreflop > 0);
+  const chipsBefore = ox.chips;
+  const oxHand = createHandSkillState();
+  const oxRef = {
+    id: "ox",
+    name: "大牛",
+    avatarId: "ox" as const,
+    chips: ox.chips,
+  };
+  applyCowRuminate(oxEngine, [oxRef], oxHand);
+  const expected = Math.floor(investedPreflop * 0.1);
+  assert.equal(oxEngine.getPlayer("ox")!.chips, chipsBefore + expected);
+  assert.equal(oxHand.oxInvestedBaseline.get("ox"), investedPreflop);
+
+  // Second street with no new investment → no bonus.
+  const chipsAfter = oxEngine.getPlayer("ox")!.chips;
+  applyCowRuminate(oxEngine, [oxRef], oxHand);
+  assert.equal(oxEngine.getPlayer("ox")!.chips, chipsAfter);
 }
 
 console.log("skill-runtime scout tests passed");

@@ -140,8 +140,8 @@ export const SKILL_CATALOG: Record<AnimalId, AnimalSkillDef> = {
     skillId: "ruminate",
     name: "反刍",
     kind: "passive",
-    usage: "被动 · 每翻牌",
-    summary: "只要不弃牌，每翻一次牌，都能获得持有筹码的5%。",
+    usage: "被动 · 每开公共牌",
+    summary: "不弃牌时，每开一轮公共牌，按你这轮下注的 10% 拿奖励。",
     target: "none",
   },
   elephant: {

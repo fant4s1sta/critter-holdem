@@ -37,6 +37,8 @@ export interface HandSkillState {
   privateScoutSlot: Map<string, number>;
   /** Fox fraud: fake raise chips held aside until hand end */
   fraudEscrow: Map<string, number>;
+  /** Ox ruminate: totalBet already counted toward street rewards */
+  oxInvestedBaseline: Map<string, number>;
   lastEvent: SkillPublicState["lastSkillEvent"];
   /** chips won this hand before bank bonuses (for bear hug / frog) */
   handWon: Map<string, number>;
@@ -58,6 +60,7 @@ export function createHandSkillState(): HandSkillState {
     privateScout: new Map(),
     privateScoutSlot: new Map(),
     fraudEscrow: new Map(),
+    oxInvestedBaseline: new Map(),
     lastEvent: null,
     handWon: new Map(),
   };
@@ -456,7 +459,8 @@ export function isRaiseBlockedBySkills(
   );
 }
 
-/** Apply cow ruminate at street boundary for non-folded cows. */
+/** Apply ox ruminate at street boundary for non-folded oxen.
+ *  Pays 10% of chips invested since the previous street (bank-funded). */
 export function applyCowRuminate(
   engine: TexasHoldemEngine,
   players: SkillPlayerRef[],
@@ -466,7 +470,10 @@ export function applyCowRuminate(
     if (p.avatarId !== "ox") continue;
     const seat = engine.getPlayer(p.id);
     if (!seat || seat.folded) continue;
-    const bonus = Math.floor(seat.chips * 0.05);
+    const baseline = hand.oxInvestedBaseline.get(p.id) ?? 0;
+    const streetInvested = Math.max(0, seat.totalBet - baseline);
+    hand.oxInvestedBaseline.set(p.id, seat.totalBet);
+    const bonus = Math.floor(streetInvested * 0.1);
     if (bonus <= 0) continue;
     engine.addChipsFromBank(p.id, bonus);
     p.chips = seat.chips;
