@@ -1,3 +1,4 @@
+import { assetSrc } from "./asset-src";
 import { ANIMALS, type AnimalId } from "./types";
 
 export const UNSET_AVATAR_EMOJI = "❓";
@@ -29,13 +30,13 @@ export const ANIMAL_AVATAR_BG: Record<AnimalId, string> = {
 export function animalAvatarSrc(id: AnimalId | null | undefined): string | null {
   if (!id) return null;
   if (!ANIMALS.some((animal) => animal.id === id)) return null;
-  return `/avatars/${id}.webp`;
+  return assetSrc(`/avatars/${id}.webp`);
 }
 
 export function animalStandeeSrc(id: AnimalId | null | undefined): string | null {
   if (!id) return null;
   if (!ANIMALS.some((animal) => animal.id === id)) return null;
-  return `/standees/${id}.webp`;
+  return assetSrc(`/standees/${id}.webp`);
 }
 
 export function animalAvatarBgRgb(id: AnimalId | null | undefined): string {
@@ -61,8 +62,8 @@ export function animalAvatarScale(id: AnimalId | null | undefined): number {
   return ANIMAL_AVATAR_SCALE[id] ?? 1;
 }
 
-export const AI_ASSISTANT_SRC = "/ai-assistant.webp";
-export const SKILL_ITEM_SRC = "/skill-item.webp";
+export const AI_ASSISTANT_SRC = assetSrc("/ai-assistant.webp");
+export const SKILL_ITEM_SRC = assetSrc("/skill-item.webp");
 
 const preloadCache = new Map<string, Promise<void>>();
 const loadedSrcs = new Set<string>();
@@ -105,7 +106,7 @@ export async function decodeImage(src: string): Promise<void> {
 }
 
 export const ANIMAL_STANDEE_SRCS = ANIMALS.map(
-  (animal) => `/standees/${animal.id}.webp`,
+  (animal) => animalStandeeSrc(animal.id) as string,
 );
 
 export function preloadAllAnimalStandees(): Promise<void> {
@@ -123,7 +124,7 @@ export function markImageLoaded(src: string): void {
 }
 
 export const ANIMAL_AVATAR_SRCS = ANIMALS.map(
-  (animal) => `/avatars/${animal.id}.webp`,
+  (animal) => animalAvatarSrc(animal.id) as string,
 );
 
 export function preloadAllAnimalAvatars(): Promise<void> {

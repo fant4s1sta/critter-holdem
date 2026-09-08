@@ -17,6 +17,7 @@
     "test:reveal": "tsx src/lib/reveal-hole-cards.test.ts",
     "test:equity": "tsx src/lib/equity.test.ts",
     "test:items": "tsx src/lib/table-items.test.ts",
+    "test:assets": "tsx src/lib/asset-src.test.ts",
     "test:footer-hit": "tsx src/lib/footer-pointer-events.test.ts",
     "test:social-echo": "tsx src/lib/social-echo.test.ts",
     "test:avatar-cooldown": "tsx src/lib/avatar-cooldown.test.ts",

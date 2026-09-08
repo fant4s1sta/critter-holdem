@@ -21,6 +21,7 @@ import {
   type ThrowItemPayload,
 } from "../src/lib/table-items";
 import { RoomManager } from "./room-manager";
+import { bindStaticAssetCache } from "../src/lib/static-asset-cache";
 
 const dev = process.env.NODE_ENV !== "production";
 // Local dev binds loopback only. Railway HOSTNAME is a container name, not a
@@ -122,6 +123,7 @@ app.prepare().then(async () => {
       );
       return;
     }
+    if (!dev) bindStaticAssetCache(req, res);
     handle(req, res);
   });
 

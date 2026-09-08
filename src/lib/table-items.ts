@@ -1,3 +1,5 @@
+import { assetSrc } from "./asset-src";
+
 /** Side-channel table items — not part of room state / revision sync. */
 
 export const ITEM_HIT_MS = 2600;
@@ -20,7 +22,7 @@ export function isTableItemId(value: string): value is TableItemId {
 }
 
 export function tableItemSrc(id: TableItemId): string {
-  return `/items/${id}.webp`;
+  return assetSrc(`/items/${id}.webp`);
 }
 
 export const TABLE_ITEM_SRCS = TABLE_ITEMS.map((item) => tableItemSrc(item.id));

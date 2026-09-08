@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { assetSrc } from "./asset-src";
 import {
   ITEM_FLIGHT_MS,
   isTableItemId,
@@ -10,10 +11,10 @@ import {
 } from "./table-items";
 
 assert.equal(TABLE_ITEMS.length, 4);
-assert.equal(tableItemSrc("bomb"), "/items/bomb.webp");
-assert.equal(tableItemSrc("egg"), "/items/egg.webp");
-assert.equal(tableItemSrc("tomato"), "/items/tomato.webp");
-assert.equal(tableItemSrc("heart"), "/items/heart.webp");
+assert.equal(tableItemSrc("bomb"), assetSrc("/items/bomb.webp"));
+assert.equal(tableItemSrc("egg"), assetSrc("/items/egg.webp"));
+assert.equal(tableItemSrc("tomato"), assetSrc("/items/tomato.webp"));
+assert.equal(tableItemSrc("heart"), assetSrc("/items/heart.webp"));
 assert.equal(isTableItemId("bomb"), true);
 assert.equal(isTableItemId("egg"), true);
 assert.equal(isTableItemId("tomato"), true);

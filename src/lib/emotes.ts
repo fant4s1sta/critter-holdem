@@ -1,10 +1,12 @@
+import { assetSrc } from "./asset-src";
+
 /** Side-channel table emotes — not part of room state / revision sync. */
 
 export const EMOTE_COOLDOWN_MS = 2000;
 export const EMOTE_DISPLAY_MS = 2200;
 
 /** One WebP sprite (4×2) so picker + bubbles share a single decode. */
-export const EMOTE_STICKER_SRC = "/emotes/stickers.webp";
+export const EMOTE_STICKER_SRC = assetSrc("/emotes/stickers.webp");
 export const EMOTE_SPRITE_COLS = 4;
 export const EMOTE_SPRITE_ROWS = 2;
 
