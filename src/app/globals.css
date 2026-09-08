@@ -2222,7 +2222,7 @@ body {
   initial-value: 0deg;
 }
 
-/* Clock wipe + rotating hand over the seat avatar during social/skill cooldown. */
+/* Radial wipe over the seat avatar during social/skill cooldown. */
 .avatar-cooldown {
   position: absolute;
   inset: 0;
