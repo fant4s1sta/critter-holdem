@@ -5,12 +5,12 @@ import { assetSrc } from "./asset-src";
 export const EMOTE_COOLDOWN_MS = 2000;
 export const EMOTE_DISPLAY_MS = 2200;
 
-/** One WebP sprite (4×3) so picker + bubbles share a single decode. */
+/** One WebP sprite (4×4) so picker + bubbles share a single decode. */
 export const EMOTE_STICKER_SRC = assetSrc("/emotes/stickers.webp");
 export const EMOTE_SPRITE_COLS = 4;
-export const EMOTE_SPRITE_ROWS = 3;
+export const EMOTE_SPRITE_ROWS = 4;
 
-/** Sprite cells match public/emotes/stickers.webp (4×3 animal sheet). */
+/** Sprite cells match public/emotes/stickers.webp (4×4 animal sheet). */
 export const TABLE_EMOTES = [
   { id: "chicken", label: "别偷我鸡", col: 0, row: 0 },
   { id: "raise", label: "加注", col: 1, row: 0 },
@@ -24,6 +24,10 @@ export const TABLE_EMOTES = [
   { id: "clean", label: "牌没有问题", col: 1, row: 2 },
   { id: "suspect", label: "牌很有问题", col: 2, row: 2 },
   { id: "sleep", label: "装睡中", col: 3, row: 2 },
+  { id: "bull", label: "牛市来了", col: 0, row: 3 },
+  { id: "noraise", label: "禁止抬价", col: 1, row: 3 },
+  { id: "flush", label: "我要同花顺", col: 2, row: 3 },
+  { id: "scream", label: "啊啊啊啊", col: 3, row: 3 },
 ] as const;
 
 export type EmoteId = (typeof TABLE_EMOTES)[number]["id"];
