@@ -5,10 +5,7 @@ import {
   BOOT_SPLASH_STYLE,
   BOOT_STATUS_ID,
 } from "@/lib/boot-splash";
-import {
-  BRAND_LOGO_PNG_SRC,
-  BRAND_LOGO_WEBP_SRC,
-} from "@/lib/critical-images";
+import { BRAND_LOGO_WEBP_SRC } from "@/lib/critical-images";
 
 /**
  * Static first-paint loader embedded in the document HTML.
@@ -35,7 +32,7 @@ export function BootSplash() {
             <picture className="boot-splash-logo">
               <source srcSet={BRAND_LOGO_WEBP_SRC} type="image/webp" />
               <img
-                src={BRAND_LOGO_PNG_SRC}
+                src={BRAND_LOGO_WEBP_SRC}
                 alt=""
                 width={1100}
                 height={782}

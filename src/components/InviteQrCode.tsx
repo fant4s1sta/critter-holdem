@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { BRAND_LOGO_PNG_SRC } from "@/lib/critical-images";
+import { BRAND_LOGO_WEBP_SRC } from "@/lib/critical-images";
 import { buildInviteUrl } from "@/lib/invite-url";
 
 /** On-screen / CSS size (design px). */
@@ -83,7 +83,7 @@ async function buildBrandedInviteQr(roomCode: string): Promise<string> {
   ctx.stroke();
 
   try {
-    const logo = await loadImage(BRAND_LOGO_PNG_SRC);
+    const logo = await loadImage(BRAND_LOGO_WEBP_SRC);
     const maxW = LOGO_PLATE_W - LOGO_PAD * 2;
     const maxH = LOGO_PLATE_H - LOGO_PAD * 2;
     const aspect = logo.naturalWidth / Math.max(logo.naturalHeight, 1);

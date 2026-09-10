@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  BRAND_LOGO_PNG_SRC,
   BRAND_LOGO_WEBP_SRC,
   isBrandLogoPreloaded,
   preloadBrandLogo,
@@ -40,7 +39,7 @@ export function BrandLogo({
       <source srcSet={BRAND_LOGO_WEBP_SRC} type="image/webp" />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={BRAND_LOGO_PNG_SRC}
+        src={BRAND_LOGO_WEBP_SRC}
         alt={variant === "card-back" ? "" : alt}
         width={1100}
         height={782}

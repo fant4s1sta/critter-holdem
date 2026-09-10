@@ -2,7 +2,6 @@ import { isImagePreloaded, preloadImage } from "./animal-display";
 import { assetSrc } from "./asset-src";
 
 export const BRAND_LOGO_WEBP_SRC = assetSrc("/brand-logo.webp");
-export const BRAND_LOGO_PNG_SRC = assetSrc("/brand-logo.png");
 export const CASINO_BACKGROUND_SRC = assetSrc("/casino-background.webp");
 export const POKER_TABLE_REFERENCE_SRC = assetSrc("/poker-table-reference.webp");
 
