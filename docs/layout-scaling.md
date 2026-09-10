@@ -56,7 +56,7 @@
 
 ### 页面内容一律顶部锚定
 
-牌桌页（`.lobby-table-shell { padding-top: 8rem }`）和首页（`.home-lobby-content { padding-top: 7.5rem }`）
+牌桌页（`.lobby-table-shell { padding-top: 6rem }`）和首页（`.home-lobby-content { padding-top: 7.5rem }`）
 的内容都从舞台顶部固定偏移开始排布，**不要**用 `justify-center` / `margin: auto` 之类依赖舞台高度的
 垂直居中——舞台高度随机型和浏览器 UI 变化，居中会让内容在不同屏幕上上下漂移，也会让锚定在固定
 纵坐标的弹窗与页面内容错位。竖向多出的空间留给背景即可。

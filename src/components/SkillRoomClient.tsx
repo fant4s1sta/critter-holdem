@@ -301,7 +301,7 @@ export function SkillRoomClient({
   const inLobby = room.status === "lobby";
 
   const header = (
-    <header className="lobby-topbar relative z-10 mx-auto flex w-full max-w-md items-center justify-between gap-3 px-[var(--ui-pad)] pb-1 pt-[max(0.55rem,var(--safe-top))]">
+    <header className="lobby-topbar relative z-20 mx-auto flex w-full max-w-md items-center justify-between gap-3 px-[var(--ui-pad)] pb-1 pt-[max(0.55rem,var(--safe-top))]">
       <div className="lobby-header-stack">
         {inLobby ? (
           <p className="lobby-header-meta lobby-topbar-code" aria-label={`房间 ${roomCode}`}>
