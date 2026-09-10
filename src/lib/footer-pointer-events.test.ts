@@ -26,7 +26,6 @@ assert.match(declarationsFor(".game-footer"), /pointer-events:\s*none/);
 assert.match(declarationsFor(".lobby-table-footer"), /pointer-events:\s*none/);
 
 for (const selector of [
-  ".game-footer .win-rate-hint",
   ".game-footer .skill-cast-btn",
   ".game-footer .game-action-panel button",
   ".game-footer .game-action-panel input",

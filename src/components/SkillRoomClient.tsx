@@ -22,6 +22,7 @@ import { usePendingAction } from "@/lib/use-pending-action";
 import { useStartGame } from "@/lib/use-start-game";
 import { serverNow } from "@/lib/server-clock";
 import { useTableSocial } from "@/lib/use-table-social";
+import { useTurnWinRate } from "@/lib/use-turn-win-rate";
 import { EMOTE_COOLDOWN_MS } from "@/lib/emotes";
 import { getSeatLayout, emotePickerPlacement, seatBadgeForSeat } from "@/lib/seat-layout";
 import { latestCooldownUntil } from "./AvatarCooldownRing";
@@ -38,7 +39,6 @@ import { LobbyAnimalPicker } from "./LobbyAnimalPicker";
 import { LobbyStandeeShowcase } from "./LobbyStandeeShowcase";
 import { CasinoBackdrop } from "./CasinoBackdrop";
 import { LobbyAlertModal } from "./LobbyAlertModal";
-import { WinRateHint } from "./WinRateHint";
 import { SkillActivateModal } from "./SkillActivateModal";
 
 export function SkillRoomClient({
@@ -232,6 +232,7 @@ export function SkillRoomClient({
   const nextHandRemain = room?.game?.nextHandAt
     ? Math.max(0, Math.ceil((room.game.nextHandAt - now) / 1000))
     : null;
+  const turnWinRate = useTurnWinRate(room, me);
 
   const seatLayout = useMemo(() => {
     if (!room) return [];
@@ -566,24 +567,6 @@ export function SkillRoomClient({
                           </button>
                         ) : null}
                       </div>
-                      {!me.folded &&
-                      me.holeCards.length === 2 &&
-                      room.game &&
-                      room.game.street !== "showdown" ? (
-                        <WinRateHint
-                          holeCards={me.holeCards}
-                          communityCards={room.game.communityCards}
-                          opponentCount={
-                            room.players.filter(
-                              (p) =>
-                                p.id !== me.id &&
-                                !p.folded &&
-                                (p.holeCardCount ?? 0) > 0,
-                            ).length
-                          }
-                          handKey={`${room.game.handNumber}-${room.game.street}-${room.game.communityCards.length}-${room.players.filter((p) => !p.folded && (p.holeCardCount ?? 0) > 0).length}`}
-                        />
-                      ) : null}
                     </div>
                   ) : me && !room.you?.spectator ? (
                     <p className="hole-cards-empty">
@@ -602,7 +585,9 @@ export function SkillRoomClient({
                     statusText = "已提交，等待服务器…";
                     statusMuted = true;
                   } else if (room.you?.canAct) {
-                    statusText = `轮到你${turnRemain != null ? ` · ${turnRemain}秒` : ""}`;
+                    statusText = `轮到你${turnRemain != null ? ` · ${turnRemain}秒` : ""}${
+                      turnWinRate != null ? ` · 参考胜率 ${turnWinRate}%` : ""
+                    }`;
                   } else {
                     statusText = "等待其他玩家";
                     statusMuted = true;

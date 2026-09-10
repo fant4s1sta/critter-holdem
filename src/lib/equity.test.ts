@@ -1,4 +1,8 @@
-import { estimateWinRate } from "./equity";
+import {
+  countLiveOpponents,
+  estimateTurnWinRate,
+  estimateWinRate,
+} from "./equity";
 import type { Card } from "./types";
 
 function c(rank: Card["rank"], suit: Card["suit"]): Card {
@@ -53,6 +57,39 @@ function assert(cond: unknown, msg: string): asserts cond {
     })(),
   });
   assert(rate >= 90, `nut flush river equity unexpected: ${rate}`);
+}
+
+{
+  const n = countLiveOpponents(
+    [
+      { id: "hero", holeCardCount: 2 },
+      { id: "a", holeCardCount: 2 },
+      { id: "b", folded: true, holeCardCount: 2 },
+      { id: "c", holeCardCount: 0 },
+    ],
+    "hero",
+  );
+  assert(n === 1, `live opponent count unexpected: ${n}`);
+}
+
+{
+  const waiting = estimateTurnWinRate({
+    canAct: false,
+    holeCards: [c("A", "s"), c("K", "s")],
+    communityCards: [],
+    street: "preflop",
+    opponentCount: 1,
+  });
+  assert(waiting === null, `waiting player should not see turn equity, got ${waiting}`);
+
+  const acting = estimateTurnWinRate({
+    canAct: true,
+    holeCards: [c("A", "s"), c("A", "h")],
+    communityCards: [],
+    street: "preflop",
+    opponentCount: 0,
+  });
+  assert(acting === 100, `acting solo equity unexpected: ${acting}`);
 }
 
 console.log("equity tests passed");

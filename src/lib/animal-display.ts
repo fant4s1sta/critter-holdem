@@ -62,7 +62,6 @@ export function animalAvatarScale(id: AnimalId | null | undefined): number {
   return ANIMAL_AVATAR_SCALE[id] ?? 1;
 }
 
-export const AI_ASSISTANT_SRC = assetSrc("/ai-assistant.webp");
 export const SKILL_ITEM_SRC = assetSrc("/skill-item.webp");
 
 const preloadCache = new Map<string, Promise<void>>();
@@ -128,8 +127,7 @@ export const ANIMAL_AVATAR_SRCS = ANIMALS.map(
 );
 
 export function preloadAllAnimalAvatars(): Promise<void> {
-  return Promise.all([
-    ...ANIMAL_AVATAR_SRCS.map((src) => preloadImage(src)),
-    preloadImage(AI_ASSISTANT_SRC),
-  ]).then(() => undefined);
+  return Promise.all(ANIMAL_AVATAR_SRCS.map((src) => preloadImage(src))).then(
+    () => undefined,
+  );
 }

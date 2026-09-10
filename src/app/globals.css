@@ -513,7 +513,6 @@ body {
   pointer-events: none;
 }
 
-.game-footer .win-rate-hint,
 .game-footer .skill-cast-btn,
 .game-footer .game-action-panel button,
 .game-footer .game-action-panel input,
@@ -2580,14 +2579,6 @@ body {
   opacity: 0.85;
 }
 
-.hole-cards-row .win-rate-hint {
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  margin-left: 40px;
-  transform: translateY(calc(-50% - 16px));
-}
-
 .hole-cards-cluster .skill-cast-btn {
   position: absolute;
   left: 50%;
@@ -2630,83 +2621,6 @@ body {
 .skill-cast-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-.win-rate-hint {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.win-rate-bot {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-.win-rate-bot-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
-  opacity: 0;
-}
-
-.win-rate-bot-img.is-ready {
-  opacity: 1;
-}
-
-.win-rate-bot:active {
-  transform: translate(1px, 1px);
-}
-
-.win-rate-bubble {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 0.45rem);
-  transform: translateX(-50%);
-  z-index: 12;
-  min-width: 7.5rem;
-  max-width: 11rem;
-  padding: 0.45rem 0.55rem;
-  border: 3px solid var(--gold-dim);
-  background: #14251c;
-  box-shadow: 3px 3px 0 #040c09;
-  color: var(--gold);
-  font-size: 0.8525rem;
-  line-height: 1.25;
-  text-align: center;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-.win-rate-bubble::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  transform: translateX(-50%);
-  border: 7px solid transparent;
-  border-top-color: var(--gold-dim);
-}
-
-.win-rate-bubble::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  transform: translateX(-50%);
-  margin-top: -3px;
-  border: 5px solid transparent;
-  border-top-color: #14251c;
-  z-index: 1;
 }
 
 .playing-card {

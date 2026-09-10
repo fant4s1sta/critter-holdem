@@ -1,4 +1,4 @@
-import type { Card, Rank, Suit } from "./types";
+import type { Card, Rank, Street, Suit } from "./types";
 import { evaluateBestHand } from "./hand-eval";
 
 const SUITS: Suit[] = ["s", "h", "d", "c"];
@@ -99,4 +99,38 @@ export function estimateWinRate(input: EquityInput): number {
   }
 
   return Math.round((equity / iterations) * 100);
+}
+
+export function countLiveOpponents(
+  players: ReadonlyArray<{
+    id: string;
+    folded?: boolean;
+    holeCardCount?: number;
+  }>,
+  heroId: string,
+): number {
+  return players.filter(
+    (player) =>
+      player.id !== heroId &&
+      !player.folded &&
+      (player.holeCardCount ?? 0) > 0,
+  ).length;
+}
+
+export function estimateTurnWinRate(input: {
+  canAct?: boolean;
+  folded?: boolean;
+  holeCards?: Card[] | null;
+  communityCards?: Card[];
+  street?: Street;
+  opponentCount: number;
+}): number | null {
+  if (!input.canAct || input.folded) return null;
+  if (!input.holeCards || input.holeCards.length !== 2) return null;
+  if (!input.street || input.street === "showdown") return null;
+  return estimateWinRate({
+    holeCards: input.holeCards,
+    communityCards: input.communityCards ?? [],
+    opponentCount: input.opponentCount,
+  });
 }
