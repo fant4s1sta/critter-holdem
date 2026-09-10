@@ -21,13 +21,13 @@ export const TABLE_EMOTES = [
   { id: "allin", label: "All in", col: 2, row: 1 },
   { id: "junk", label: "什么破牌", col: 3, row: 1 },
   { id: "inspect", label: "我要验牌", col: 0, row: 2 },
-  { id: "clean", label: "牌没有问题", col: 1, row: 2 },
-  { id: "suspect", label: "牌很有问题", col: 2, row: 2 },
-  { id: "sleep", label: "装睡中", col: 3, row: 2 },
-  { id: "bull", label: "牛市来了", col: 0, row: 3 },
-  { id: "noraise", label: "禁止抬价", col: 1, row: 3 },
-  { id: "flush", label: "我要同花顺", col: 2, row: 3 },
-  { id: "scream", label: "啊啊啊啊", col: 3, row: 3 },
+  { id: "sleep", label: "装睡中", col: 1, row: 2 },
+  { id: "clean", label: "牌没有问题", col: 2, row: 2 },
+  { id: "suspect", label: "牌很有问题", col: 3, row: 2 },
+  { id: "flush", label: "我要同花顺", col: 0, row: 3 },
+  { id: "scream", label: "啊啊啊啊", col: 1, row: 3 },
+  { id: "dame", label: "达咩", col: 2, row: 3 },
+  { id: "runaway", label: "赢了跑路", col: 3, row: 3 },
 ] as const;
 
 export type EmoteId = (typeof TABLE_EMOTES)[number]["id"];
