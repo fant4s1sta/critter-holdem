@@ -15,10 +15,14 @@ import {
 } from "@/lib/session";
 import { getSocket } from "@/lib/socket";
 import {
+  LOBBY_BOOT_ASSET_SRCS,
+  TABLE_BOOT_ASSET_SRCS,
   dismissBootSplash,
+  ensureTableBootAssets,
   preloadBootAssetsWithProgress,
   syncBootAssetRegistry,
-  waitForBootAssets,
+  waitForLobbyBootAssets,
+  warmTableBootAssets,
 } from "@/lib/boot-splash";
 import type { RoomPublicState, RuleMode } from "@/lib/types";
 
@@ -28,27 +32,42 @@ export function AppShell() {
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [resume, setResume] = useState<RoomResumeOffer | null>(null);
   const [ready, setReady] = useState(false);
-  const [assetsReady, setAssetsReady] = useState(false);
+  const [lobbyAssetsReady, setLobbyAssetsReady] = useState(false);
+  const [tableAssetsReady, setTableAssetsReady] = useState(false);
   const homeShellRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
-    let settled = false;
+    let lobbySettled = false;
 
-    const finish = () => {
-      if (cancelled || settled) return;
-      settled = true;
-      setAssetsReady(true);
+    const finishLobby = () => {
+      if (cancelled || lobbySettled) return;
+      lobbySettled = true;
+      setLobbyAssetsReady(true);
+      // Keep downloading table art after home is allowed to paint.
+      warmTableBootAssets();
+      void waitForTableReady();
     };
 
+    async function waitForTableReady() {
+      try {
+        await ensureTableBootAssets();
+        if (!cancelled) setTableAssetsReady(true);
+      } catch {
+        if (!cancelled) setTableAssetsReady(true);
+      }
+    }
+
     // Prefer the early HTML inline loader; fall back if it never signals.
-    // Always sync the React preload registry so avatars/standees/table paint immediately.
-    void waitForBootAssets()
-      .then(() => syncBootAssetRegistry())
-      .then(finish);
+    // Home only waits on lobby-critical images; room art warms in the background.
+    void waitForLobbyBootAssets()
+      .then(() => syncBootAssetRegistry(LOBBY_BOOT_ASSET_SRCS))
+      .then(finishLobby);
     const timer = window.setTimeout(() => {
-      if (window.__BOOT_ASSETS_READY__) return;
-      void preloadBootAssetsWithProgress().then(finish);
+      if (window.__BOOT_LOBBY_READY__) return;
+      void preloadBootAssetsWithProgress()
+        .then(() => syncBootAssetRegistry(LOBBY_BOOT_ASSET_SRCS))
+        .then(finishLobby);
     }, 160);
 
     return () => {
@@ -58,9 +77,12 @@ export function AppShell() {
   }, []);
 
   useLayoutEffect(() => {
-    if (!ready || !assetsReady) return;
+    // Stay on splash for deep-linked rooms until table art is ready, so the
+    // first room paint never flashes empty seats / felt.
+    if (!ready || !lobbyAssetsReady) return;
+    if (roomCode && !tableAssetsReady) return;
     dismissBootSplash();
-  }, [ready, assetsReady]);
+  }, [ready, lobbyAssetsReady, roomCode, tableAssetsReady]);
 
   useEffect(() => {
     const urlCode = readRoomCodeFromLocation();
@@ -176,7 +198,7 @@ export function AppShell() {
 
   // Keep HTML BootSplash on top; React still paints a dark loader underneath
   // so a missed/dismissed splash can never flash a blank stage.
-  if (!ready || !assetsReady) {
+  if (!ready || !lobbyAssetsReady) {
     return <FullScreenLoader label="加载资源中" />;
   }
 
@@ -185,6 +207,7 @@ export function AppShell() {
       <RoomGate
         code={roomCode}
         initialRoom={initialRoom}
+        tableAssetsReady={tableAssetsReady}
         onLeaveHome={leaveRoom}
       />
     );
@@ -258,15 +281,37 @@ function ResumeRoomModal({
 function RoomGate({
   code,
   initialRoom,
+  tableAssetsReady,
   onLeaveHome,
 }: {
   code: string;
   initialRoom: RoomPublicState | null;
+  tableAssetsReady: boolean;
   onLeaveHome: () => void;
 }) {
   const [ruleMode, setRuleMode] = useState<RuleMode | null>(() =>
     initialRoom?.ruleMode ?? getRoomRuleMode(code),
   );
+  const [tableReady, setTableReady] = useState(tableAssetsReady);
+
+  useEffect(() => {
+    if (tableAssetsReady) {
+      setTableReady(true);
+      return;
+    }
+    let cancelled = false;
+    void ensureTableBootAssets()
+      .then(() => syncBootAssetRegistry(TABLE_BOOT_ASSET_SRCS))
+      .then(() => {
+        if (!cancelled) setTableReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setTableReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tableAssetsReady]);
 
   useEffect(() => {
     if (ruleMode) return;
@@ -317,6 +362,10 @@ function RoomGate({
       cancelled = true;
     };
   }, [code, ruleMode]);
+
+  if (!tableReady) {
+    return <FullScreenLoader label="加载牌桌资源" />;
+  }
 
   if (!ruleMode) {
     return <FullScreenLoader label="同步中" />;

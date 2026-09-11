@@ -5,7 +5,7 @@ export const BRAND_LOGO_WEBP_SRC = assetSrc("/brand-logo.webp");
 export const CASINO_BACKGROUND_SRC = assetSrc("/casino-background.webp");
 export const POKER_TABLE_REFERENCE_SRC = assetSrc("/poker-table-reference.webp");
 
-/** Brand + home background. Poker table is also in BOOT_ASSET_SRCS. */
+/** Brand + home background. Poker table lives in TABLE_BOOT_ASSET_SRCS. */
 export const CRITICAL_IMAGE_SRCS = [
   BRAND_LOGO_WEBP_SRC,
   CASINO_BACKGROUND_SRC,

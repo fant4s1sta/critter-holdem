@@ -21,12 +21,18 @@ export const BOOT_PERCENT_ID = "boot-splash-percent";
 export const BOOT_STATUS_ID = "boot-splash-status";
 
 /**
- * All gameplay-critical images. Boot splash stays up until every entry is
- * loaded — no soft timeout — so pages never paint with blank art.
+ * Home lobby first paint — keep the splash short. Logo + casino backdrop only.
  */
-export const BOOT_ASSET_SRCS: readonly string[] = [
+export const LOBBY_BOOT_ASSET_SRCS: readonly string[] = [
   BRAND_LOGO_WEBP_SRC,
   CASINO_BACKGROUND_SRC,
+];
+
+/**
+ * Room / table art. Loaded after lobby (or gated by RoomGate) so gameplay
+ * never paints blank seats, stickers, or table felt.
+ */
+export const TABLE_BOOT_ASSET_SRCS: readonly string[] = [
   POKER_TABLE_REFERENCE_SRC,
   SKILL_ITEM_SRC,
   EMOTE_STICKER_SRC,
@@ -35,8 +41,19 @@ export const BOOT_ASSET_SRCS: readonly string[] = [
   ...ANIMAL_STANDEE_SRCS,
 ];
 
+/** Full boot set (lobby + table). Prefer the phased lists for gating. */
+export const BOOT_ASSET_SRCS: readonly string[] = [
+  ...LOBBY_BOOT_ASSET_SRCS,
+  ...TABLE_BOOT_ASSET_SRCS,
+];
+
 declare global {
   interface Window {
+    /** Lobby-critical images settled (home may open). */
+    __BOOT_LOBBY_READY__?: boolean;
+    /** Table / room images settled (room may open). */
+    __BOOT_TABLE_READY__?: boolean;
+    /** All boot images settled (lobby + table). */
     __BOOT_ASSETS_READY__?: boolean;
     __BOOT_ASSETS_PROGRESS__?: number;
   }
@@ -115,20 +132,32 @@ html,body{background:#120e0a;margin:0;}
 }
 `.replace(/\n/g, "");
 
+function uniqueSrcs(srcs: readonly string[]): string[] {
+  return [...new Set(srcs)];
+}
+
 /**
- * Inline boot script: starts asset fetch before React hydrates and paints
- * progress onto the splash DOM. Retries failed URLs a few times, then settles
- * — no wall-clock timeout — so the app never opens with missing art.
+ * Inline boot script: load lobby assets first (splash progress), signal home
+ * ready, then warm table assets in the background. Retries failed URLs a few
+ * times; no wall-clock timeout.
  */
-export function buildBootLoaderScript(srcs: readonly string[]): string {
+export function buildBootLoaderScript(
+  lobbySrcs: readonly string[] = LOBBY_BOOT_ASSET_SRCS,
+  tableSrcs: readonly string[] = TABLE_BOOT_ASSET_SRCS,
+): string {
+  const lobby = uniqueSrcs(lobbySrcs);
+  const table = uniqueSrcs(tableSrcs).filter((src) => !lobby.includes(src));
   return `(function(){
-var srcs=${JSON.stringify(srcs)};
-var total=srcs.length||1;
-var done=0;
-var finished=false;
+var lobby=${JSON.stringify(lobby)};
+var table=${JSON.stringify(table)};
+var lobbyTotal=lobby.length||1;
+var lobbyDone=0;
+var tableDone=0;
+var lobbyFinished=false;
+var tableFinished=false;
 var maxAttempts=3;
-function paint(){
-  var p=Math.min(100,Math.round(done/total*100));
+function paintLobby(){
+  var p=Math.min(100,Math.round(lobbyDone/lobbyTotal*100));
   window.__BOOT_ASSETS_PROGRESS__=p;
   var root=document.getElementById(${JSON.stringify(BOOT_SPLASH_ID)});
   var fill=document.getElementById(${JSON.stringify(BOOT_PROGRESS_FILL_ID)});
@@ -137,50 +166,67 @@ function paint(){
   if(root)root.setAttribute("aria-valuenow",String(p));
   if(fill)fill.style.width=p+"%";
   if(pct)pct.textContent=p+"%";
-  if(status)status.textContent=finished?"即将进入":"正在加载资源 "+done+"/"+total;
+  if(status)status.textContent=lobbyFinished?"即将进入":"正在加载资源 "+lobbyDone+"/"+lobbyTotal;
 }
-function finish(){
-  if(finished)return;
-  finished=true;
-  window.__BOOT_ASSETS_READY__=true;
+function finishLobby(){
+  if(lobbyFinished)return;
+  lobbyFinished=true;
+  window.__BOOT_LOBBY_READY__=true;
   window.__BOOT_ASSETS_PROGRESS__=100;
-  paint();
+  paintLobby();
+  try{window.dispatchEvent(new Event("boot-lobby-ready"));}catch(e){}
+  loadGroup(table,onTableOne,finishTable);
+}
+function finishTable(){
+  if(tableFinished)return;
+  tableFinished=true;
+  window.__BOOT_TABLE_READY__=true;
+  window.__BOOT_ASSETS_READY__=true;
+  try{window.dispatchEvent(new Event("boot-table-ready"));}catch(e){}
   try{window.dispatchEvent(new Event("boot-assets-ready"));}catch(e){}
 }
-function one(){
-  done+=1;
-  paint();
-  if(done>=total)finish();
+function onLobbyOne(){
+  lobbyDone+=1;
+  paintLobby();
+  if(lobbyDone>=lobbyTotal)finishLobby();
 }
-if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",paint);
-else paint();
-for(var i=0;i<srcs.length;i++){
-  (function(src){
-    var settled=false;
-    var attempts=0;
-    function settle(){
-      if(settled)return;
-      settled=true;
-      one();
-    }
-    function load(){
-      attempts+=1;
-      var img=new Image();
-      img.onload=settle;
-      img.onerror=function(){
-        if(attempts<maxAttempts){
-          setTimeout(load, 120*attempts);
-          return;
-        }
-        settle();
-      };
-      img.decoding="async";
-      img.src=src+(attempts>1?((src.indexOf("?")>=0?"&":"?")+"retry="+attempts):"");
-    }
-    load();
-  })(srcs[i]);
+function onTableOne(){
+  tableDone+=1;
+  if(tableDone>=(table.length||0) && table.length===0)finishTable();
+  if(table.length>0 && tableDone>=table.length)finishTable();
 }
-if(!srcs.length)finish();
+function loadGroup(srcs,onOne,onEmpty){
+  if(!srcs.length){onEmpty();return;}
+  for(var i=0;i<srcs.length;i++){
+    (function(src){
+      var settled=false;
+      var attempts=0;
+      function settle(){
+        if(settled)return;
+        settled=true;
+        onOne();
+      }
+      function load(){
+        attempts+=1;
+        var img=new Image();
+        img.onload=settle;
+        img.onerror=function(){
+          if(attempts<maxAttempts){
+            setTimeout(load, 120*attempts);
+            return;
+          }
+          settle();
+        };
+        img.decoding="async";
+        img.src=src+(attempts>1?((src.indexOf("?")>=0?"&":"?")+"retry="+attempts):"");
+      }
+      load();
+    })(srcs[i]);
+  }
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",paintLobby);
+else paintLobby();
+loadGroup(lobby,onLobbyOne,finishLobby);
 })();`;
 }
 
@@ -219,7 +265,7 @@ export function updateBootSplashProgress(loaded: number, total: number) {
   }
 }
 
-/** Mark boot assets as ready in the React preload registry (browser cache hit). */
+/** Mark assets as ready in the React preload registry (browser cache hit). */
 export async function syncBootAssetRegistry(
   srcs: readonly string[] = BOOT_ASSET_SRCS,
 ): Promise<void> {
@@ -227,53 +273,111 @@ export async function syncBootAssetRegistry(
   for (const src of srcs) markImageLoaded(src);
 }
 
-/** Resolves when the inline boot loader (or React fallback) finishes assets. */
-export function waitForBootAssets(): Promise<void> {
+function waitForWindowFlag(
+  flag: "__BOOT_LOBBY_READY__" | "__BOOT_TABLE_READY__" | "__BOOT_ASSETS_READY__",
+  eventName: string,
+): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
-  if (window.__BOOT_ASSETS_READY__) return Promise.resolve();
+  if (window[flag]) return Promise.resolve();
 
   return new Promise((resolve) => {
     const onReady = () => {
-      window.removeEventListener("boot-assets-ready", onReady);
+      window.removeEventListener(eventName, onReady);
       window.clearInterval(poll);
       resolve();
     };
-    window.addEventListener("boot-assets-ready", onReady);
+    window.addEventListener(eventName, onReady);
     const poll = window.setInterval(() => {
-      if (window.__BOOT_ASSETS_READY__) onReady();
+      if (window[flag]) onReady();
     }, 80);
   });
 }
 
+/** Resolves when lobby-critical images are ready (home may open). */
+export function waitForLobbyBootAssets(): Promise<void> {
+  return waitForWindowFlag("__BOOT_LOBBY_READY__", "boot-lobby-ready");
+}
+
+/** Resolves when table / room images are ready. */
+export function waitForTableBootAssets(): Promise<void> {
+  return waitForWindowFlag("__BOOT_TABLE_READY__", "boot-table-ready");
+}
+
+/** Resolves when the full boot set is ready (lobby + table). */
+export function waitForBootAssets(): Promise<void> {
+  return waitForWindowFlag("__BOOT_ASSETS_READY__", "boot-assets-ready");
+}
+
+async function preloadSrcGroup(
+  srcs: readonly string[],
+  onProgress?: (loaded: number, total: number) => void,
+): Promise<void> {
+  const list = uniqueSrcs(srcs);
+  let loaded = 0;
+  const total = list.length;
+  onProgress?.(0, total);
+  await Promise.all(
+    list.map(async (src) => {
+      await preloadImage(src);
+      markImageLoaded(src);
+      loaded += 1;
+      onProgress?.(loaded, total);
+    }),
+  );
+}
+
 /**
- * React-side fallback preload with the same progress UI, in case the inline
- * script was blocked or the list changed after deploy. No timeout — waits
- * for every asset to load or error.
+ * React-side fallback: load lobby first (splash progress), then warm table
+ * assets. Used when the inline script is blocked or the list changed.
  */
 export async function preloadBootAssetsWithProgress(
-  srcs: readonly string[] = BOOT_ASSET_SRCS,
+  lobbySrcs: readonly string[] = LOBBY_BOOT_ASSET_SRCS,
+  tableSrcs: readonly string[] = TABLE_BOOT_ASSET_SRCS,
 ): Promise<void> {
   if (typeof window === "undefined") return;
-  if (window.__BOOT_ASSETS_READY__) {
-    updateBootSplashProgress(srcs.length, srcs.length);
-    await syncBootAssetRegistry(srcs);
+
+  if (window.__BOOT_LOBBY_READY__ && window.__BOOT_TABLE_READY__) {
+    window.__BOOT_ASSETS_READY__ = true;
+    updateBootSplashProgress(1, 1);
+    await syncBootAssetRegistry([...lobbySrcs, ...tableSrcs]);
     return;
   }
 
-  let loaded = 0;
-  const total = srcs.length;
-  updateBootSplashProgress(0, total);
+  if (!window.__BOOT_LOBBY_READY__) {
+    await preloadSrcGroup(lobbySrcs, updateBootSplashProgress);
+    window.__BOOT_LOBBY_READY__ = true;
+    window.__BOOT_ASSETS_PROGRESS__ = 100;
+    updateBootSplashProgress(lobbySrcs.length || 1, lobbySrcs.length || 1);
+    window.dispatchEvent(new Event("boot-lobby-ready"));
+  }
 
-  await Promise.all(
-    srcs.map(async (src) => {
-      await preloadImage(src);
-      loaded += 1;
-      updateBootSplashProgress(loaded, total);
-    }),
-  );
+  if (!window.__BOOT_TABLE_READY__) {
+    await preloadSrcGroup(tableSrcs);
+    window.__BOOT_TABLE_READY__ = true;
+    window.__BOOT_ASSETS_READY__ = true;
+    window.dispatchEvent(new Event("boot-table-ready"));
+    window.dispatchEvent(new Event("boot-assets-ready"));
+  }
+}
 
+/** Ensure table assets are cached before mounting room UI. */
+export async function ensureTableBootAssets(): Promise<void> {
+  if (typeof window === "undefined") return;
+  if (window.__BOOT_TABLE_READY__) {
+    await syncBootAssetRegistry(TABLE_BOOT_ASSET_SRCS);
+    return;
+  }
+
+  await preloadSrcGroup(TABLE_BOOT_ASSET_SRCS);
+  window.__BOOT_TABLE_READY__ = true;
   window.__BOOT_ASSETS_READY__ = true;
-  window.__BOOT_ASSETS_PROGRESS__ = 100;
-  updateBootSplashProgress(total, total);
+  window.dispatchEvent(new Event("boot-table-ready"));
   window.dispatchEvent(new Event("boot-assets-ready"));
+}
+
+/** Warm table assets after lobby is up (non-blocking for home). */
+export function warmTableBootAssets(): void {
+  if (typeof window === "undefined") return;
+  if (window.__BOOT_TABLE_READY__) return;
+  void ensureTableBootAssets();
 }

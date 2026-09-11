@@ -6,7 +6,11 @@ import { CriticalImagePreload } from "@/components/CriticalImagePreload";
 import { DesignStage } from "@/components/DesignStage";
 import { OrientationPrompt } from "@/components/OrientationPrompt";
 import { STAGE_SCALE_BOOTSTRAP } from "@/lib/design-stage";
-import { BOOT_ASSET_SRCS, buildBootLoaderScript } from "@/lib/boot-splash";
+import {
+  LOBBY_BOOT_ASSET_SRCS,
+  TABLE_BOOT_ASSET_SRCS,
+  buildBootLoaderScript,
+} from "@/lib/boot-splash";
 
 const body = Noto_Sans_SC({
   variable: "--font-body",
@@ -49,7 +53,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: STAGE_SCALE_BOOTSTRAP }} />
         <script
           dangerouslySetInnerHTML={{
-            __html: buildBootLoaderScript(BOOT_ASSET_SRCS),
+            __html: buildBootLoaderScript(LOBBY_BOOT_ASSET_SRCS, TABLE_BOOT_ASSET_SRCS),
           }}
         />
         <CriticalImagePreload />

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { preloadImage } from "@/lib/animal-display";
 import { POKER_TABLE_REFERENCE_SRC } from "@/lib/critical-images";
 
-/** Table art is part of BOOT_ASSET_SRCS — by room mount it is already cached. */
+/** Table art is in TABLE_BOOT_ASSET_SRCS — RoomGate waits for it before mount. */
 export function PokerTableSurface({ className = "" }: { className?: string }) {
   useEffect(() => {
     void preloadImage(POKER_TABLE_REFERENCE_SRC);
