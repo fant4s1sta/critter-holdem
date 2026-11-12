@@ -148,16 +148,39 @@ export function Room3DClient({
     </header>
     <div className={styles.phase}>{game ? `第 ${game.handNumber} 手 · ${streets[game.street]} · 底池 ${game.pot.toLocaleString()}` : "经典德州 · 等待入座"}</div>
     {error && <div className={styles.error} role="alert">{error}<button aria-label="关闭提示" onClick={() => setError("")}>×</button></div>}
-    <section className={styles.panel} data-playing={room?.status === "playing"} aria-label="玩家操作区">
+    <section className={styles.panel} data-playing={room?.status === "playing"} data-lobby={room?.status === "lobby"} aria-label="玩家操作区">
       {!connected && <p role="status" className={styles.connection}>连接中，暂不能操作…</p>}
       {!room ? <p role="status">正在同步房间…</p> : room.status === "lobby" ? <>
-        <div className={styles.panelTitle}><strong>熊猫牌友，入座吧</strong><span>{room.players.length} / {maxPlayers} 人</span></div>
-        <p className={styles.hint}>2–8 人 · 初始筹码 1,000 · 小盲 10 / 大盲 20</p>
-        <div className={styles.roster}>{room.players.map(player => <span key={player.id}>🐼 {player.name}{player.isHost ? " · 房主" : ""}</span>)}</div>
-        <div className={styles.actions}>{host ? <>
-          <button onClick={() => void submit({ type: "add_bot" })} disabled={!connected || !!pending || room.players.length >= maxPlayers}>{pending === "add_bot" ? "入座中…" : "添加机器人"}</button>
-          <button className={styles.primary} onClick={() => void submit({ type: "start" })} disabled={!connected || !!pending || room.players.length < 2}>{pending === "start" ? "准备中…" : "开始对局"}</button>
-        </> : <span>等待房主开始对局</span>}</div>
+        <div className={styles.lobbyHeader}>
+          <span className={styles.lobbyCards} aria-hidden="true"><span>♠︎</span></span>
+          <div className={styles.lobbyHeading}>
+            <h2>准备开局</h2>
+            <p><b>2</b> 人起<span aria-hidden="true"> · </span>初始筹码 <b>1,000</b><span aria-hidden="true"> · </span>盲注 <b>10 / 20</b></p>
+          </div>
+          <span className={styles.seatCount} role="status"><b>{room.players.length}</b> / {maxPlayers} 人</span>
+        </div>
+        <ul className={styles.seats} aria-label="牌桌座位">
+          {Array.from({ length: maxPlayers }, (_, seat) => {
+            const player = room.players.find(entry => entry.seat === seat);
+            return <li className={styles.lobbySeat} key={seat} data-occupied={!!player} data-host={!!player?.isHost}>
+              <span className={styles.seatIcon} aria-hidden="true">{player ? "🐼" : "·"}</span>
+              <div className={styles.seatIdentity}>
+                <span className={styles.seatName} title={player?.name}>{player?.name ?? "空位"}</span>
+                {player?.isHost && <span className={styles.hostBadge}>房主</span>}
+              </div>
+            </li>;
+          })}
+        </ul>
+        {host ? <div className={`${styles.playActions} ${styles.lobbyActions}`}>
+          <button onClick={() => void submit({ type: "add_bot" })} disabled={!connected || !!pending || room.players.length >= maxPlayers}>
+            <span className={styles.actionSymbol} aria-hidden="true">+</span>
+            {pending === "add_bot" ? "入座中…" : "添加机器人"}
+          </button>
+          <button data-emphasis="true" onClick={() => void submit({ type: "start" })} disabled={!connected || !!pending || room.players.length < 2}>
+            <span className={styles.startSymbol} aria-hidden="true" />
+            {pending === "start" ? "准备中…" : "开始对局"}
+          </button>
+        </div> : <p className={styles.waiting} role="status">等待房主开始对局</p>}
       </> : room.status === "finished" ? <>
         <strong>本场结束</strong>
         <p>{room.players.filter(player => player.chips > 0).map(player => `${player.name} · ${player.chips.toLocaleString()}`).join("、") || "牌局已结束"}</p>
