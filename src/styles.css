@@ -1,0 +1,46 @@
+:root {
+  --design-w: 440px;
+  --stage-scale: 1;
+  --stage-h: calc(100vh / var(--stage-scale));
+  --safe-top: calc(env(safe-area-inset-top, 0px) / var(--stage-scale));
+  --safe-bottom: calc(env(safe-area-inset-bottom, 0px) / var(--stage-scale));
+  font-family: "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  color: #fff0cc;
+  background: #120e0a;
+}
+
+@supports (height: 1svh) {
+  :root { --stage-h: calc(100svh / var(--stage-scale)); }
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; overflow: hidden; overscroll-behavior: none; }
+button, input { font: inherit; }
+button:focus-visible, input:focus-visible { outline: 2px solid #ffe3a0; outline-offset: 2px; }
+
+.design-stage {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  width: var(--design-w);
+  height: var(--stage-h);
+  transform: translateX(-50%) scale(var(--stage-scale));
+  transform-origin: top center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.orientation-prompt { display: none; }
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .design-stage { visibility: hidden; }
+  .orientation-prompt {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 24px;
+    background: #120e0a;
+  }
+}
