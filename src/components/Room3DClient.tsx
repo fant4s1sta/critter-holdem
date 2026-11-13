@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { GameActionPayload, RoomPublicState } from "@/lib/types";
 import type { RoomSocket } from "@/lib/socket";
 import type { PandaScene } from "@/lib/panda3d/scene";
+import { critterIconForSeat } from "@/lib/critters";
 import { CHIP_VALUES, chipTotal } from "@/lib/chips";
 import { CHIP_COLORS, selectedRaise } from "@/lib/panda3d/live-state";
 import styles from "./Room3DClient.module.css";
@@ -163,7 +164,7 @@ export function Room3DClient({
           {Array.from({ length: maxPlayers }, (_, seat) => {
             const player = room.players.find(entry => entry.seat === seat);
             return <li className={styles.lobbySeat} key={seat} data-occupied={!!player} data-host={!!player?.isHost}>
-              <span className={styles.seatIcon} aria-hidden="true">{player ? "🐼" : "·"}</span>
+              <span className={styles.seatIcon} aria-hidden="true">{player ? critterIconForSeat(player.seat) : "·"}</span>
               <div className={styles.seatIdentity}>
                 <span className={styles.seatName} title={player?.name}>{player?.name ?? "空位"}</span>
                 {player?.isHost && <span className={styles.hostBadge}>房主</span>}

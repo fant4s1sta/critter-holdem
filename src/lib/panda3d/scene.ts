@@ -7,7 +7,8 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { PandaActor } from './character';
+import { CritterActor } from './character';
+import { critterKindForSeat } from '../critters';
 import { addTable, addRoom, addChair, addCard, addChips, material, mesh, EIGHT_SEATS, seatsForPlayers, SEAT_SCALE, TABLE_Y, disposeRoomCaches } from './room';
 
 export type PandaScene = { setRoom: (room: RoomPublicState) => void };
@@ -22,7 +23,7 @@ export async function createPandaScene(host:HTMLElement,initialRoom:RoomPublicSt
   renderer.setPixelRatio(Math.min(Math.max(window.devicePixelRatio,1.5),2));renderer.setSize(440,780);
   renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;
-  renderer.domElement.setAttribute('aria-label','第一人称 3D 熊猫牌桌');host.append(renderer.domElement);
+  renderer.domElement.setAttribute('aria-label','第一人称 3D 萌兽牌桌');host.append(renderer.domElement);
   const scene=new THREE.Scene();scene.background=new THREE.Color('#35271e');scene.fog=new THREE.Fog('#372a20',18,35);
   const camera=new THREE.PerspectiveCamera(53,440/780,.1,45);
   const composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(440,780,{type:THREE.HalfFloatType,samples:4}));
@@ -54,7 +55,8 @@ export async function createPandaScene(host:HTMLElement,initialRoom:RoomPublicSt
   own.add(ownCards);
   const pawMat=material('#24282d',.86);
   for(const side of [-1,1]){const paw=mesh(own,new THREE.CapsuleGeometry(.16,.42,12,32),pawMat,[side*.37,-.3,.11]);paw.rotation.z=side*.3;paw.rotation.x=-.15;}
-  let actors:PandaActor[]=[];let disposed=false,raf=0,time=0,last=performance.now();
+  const roster=new THREE.Group();scene.add(roster);
+  let pool:CritterActor[]=[];let disposed=false,raf=0,time=0,last=performance.now();
   const cameraHome=new THREE.Vector3(0,6.4,10.5),targetHome=new THREE.Vector3(0,.95,.35),camPosition=cameraHome.clone();
   camera.position.copy(cameraHome);camera.lookAt(targetHome);
   let liveRoom=initialRoom;
@@ -92,6 +94,14 @@ export async function createPandaScene(host:HTMLElement,initialRoom:RoomPublicSt
     liveMapping = liveSeatMap(room);
     const signature=JSON.stringify([room.game?.communityCards,room.players.map(p=>[p.id,p.seat,p.totalBetChips,p.folded,p.holeCards]),room.you.playerId]);
     if(signature===liveSignature)return;liveSignature=signature;
+    // Actors belong to absolute room seats, not screen slots. Adding another
+    // player or changing the viewer must not swap an existing player's animal.
+    pool.forEach(actor=>{actor.group.visible=false;roster.add(actor.group);});
+    liveMapping.opponents.forEach((player,i)=>{
+      const actor=player?pool[player.seat]:undefined;
+      if(actor){seatGroups[i].add(actor.group);actor.group.visible=true;}
+    });
+    pawMat.color.set(critterKindForSeat(liveMapping.foreground?.seat??0)==='pig'?'#b46e59':'#24282d');
     clearCards(board);
     (room.game?.communityCards??[]).forEach((card,i)=>{
       const model=addCard(board,card.rank==='T'?'10':card.rank,suits[card.suit],boardWidth);
@@ -138,9 +148,9 @@ export async function createPandaScene(host:HTMLElement,initialRoom:RoomPublicSt
       group.position.set(seat.x, 0, seat.z);
       group.rotation.y = seat.angle;
     });
-    actors.forEach((actor,i)=>{
-      const player=liveMapping.opponents[i];
-      actor.group.visible = !!player;
+    liveMapping.opponents.forEach(player=>{
+      if(!player)return;
+      const actor=pool[player.seat];
       actor.setHoldingCards(!!(player?.holeCardCount && !player.folded));
       const won=liveRoom.game?.winners?.some(w=>w.playerId===player?.id);
       actor.update(time, dt, won ? 'happy' : player?.id === liveRoom.game?.actingPlayerId ? 'thinking' : 'natural', reduced.matches);
@@ -163,8 +173,20 @@ export async function createPandaScene(host:HTMLElement,initialRoom:RoomPublicSt
   const dispose=()=>{if(disposed)return;disposed=true;cancelAnimationFrame(raf);signal.removeEventListener('abort',dispose);labels.forEach(el=>el.remove());disposeTree(scene);key.shadow.dispose();ao.dispose();output.dispose();composer.dispose();env.dispose();renderer.dispose();renderer.domElement.remove();disposeRoomCaches();};
   signal.addEventListener('abort',dispose,{once:true});
   try {
-    const gltf=await new GLTFLoader().loadAsync('/models/panda/panda-rigged-v2.glb');
-    if (disposed) { disposeTree(gltf.scene); signal.throwIfAborted(); }
+    // Settle both loads so a failure or abort cannot leak the other model.
+    const loaded=await Promise.allSettled([
+      new GLTFLoader().loadAsync('/models/panda/panda-rigged-v2.glb'),
+      new GLTFLoader().loadAsync('/models/pig/pig-rigged.glb'),
+    ]);
+    const failed=loaded.find(r=>r.status==='rejected');
+    if(disposed||failed){
+      loaded.forEach(r=>{if(r.status==='fulfilled')disposeTree(r.value.scene);});
+      signal.throwIfAborted();
+      if(failed?.status==='rejected')throw failed.reason;
+    }
+    const [gltf,pig]=loaded.map(r=>{if(r.status==='rejected')throw r.reason;return r.value;});
+    // Keep the source resources in the disposal tree, but never render T-poses.
+    gltf.scene.visible=false;pig.scene.visible=false;scene.add(gltf.scene,pig.scene);
     // Neutralize the warm pigment baked into this panda's albedo only.
     // Preserve texture detail and scene lighting; dark patches remain charcoal.
     const pandaMaterials=new Set<THREE.MeshStandardMaterial>();
@@ -178,7 +200,11 @@ export async function createPandaScene(host:HTMLElement,initialRoom:RoomPublicSt
       `);};
       mat.customProgramCacheKey=()=> 'panda-neutral-black-white-v1';mat.needsUpdate=true;
     });
-    actors=seatGroups.map((g,i)=>{const a=new PandaActor(gltf.scene,i);g.add(a.group);return a;});
+    pool=Array.from({length:8},(_,seat)=>{
+      const kind=critterKindForSeat(seat);
+      const actor=new CritterActor(kind==='pig'?pig.scene:gltf.scene,seat,kind);
+      roster.add(actor.group);return actor;
+    });
     setRoom(initialRoom);
     frame();
   }catch(e){dispose();throw e;}
