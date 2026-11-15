@@ -8,7 +8,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { CritterActor } from './character';
-import { critterKindForSeat } from '../critters';
+import { CRITTERS, critterKindForSeat, type CritterKind } from '../critters';
 import { addTable, addRoom, addChair, addCard, addChips, material, mesh, EIGHT_SEATS, seatsForPlayers, SEAT_SCALE, TABLE_Y, disposeRoomCaches } from './room';
 
 export type PandaScene = { setRoom: (room: RoomPublicState) => void };
@@ -101,7 +101,7 @@ export async function createPandaScene(host:HTMLElement,initialRoom:RoomPublicSt
       const actor=player?pool[player.seat]:undefined;
       if(actor){seatGroups[i].add(actor.group);actor.group.visible=true;}
     });
-    pawMat.color.set(critterKindForSeat(liveMapping.foreground?.seat??0)==='pig'?'#b46e59':'#24282d');
+    pawMat.color.set(CRITTERS[critterKindForSeat(liveMapping.foreground?.seat??0)].pawColor);
     clearCards(board);
     (room.game?.communityCards??[]).forEach((card,i)=>{
       const model=addCard(board,card.rank==='T'?'10':card.rank,suits[card.suit],boardWidth);
@@ -173,24 +173,22 @@ export async function createPandaScene(host:HTMLElement,initialRoom:RoomPublicSt
   const dispose=()=>{if(disposed)return;disposed=true;cancelAnimationFrame(raf);signal.removeEventListener('abort',dispose);labels.forEach(el=>el.remove());disposeTree(scene);key.shadow.dispose();ao.dispose();output.dispose();composer.dispose();env.dispose();renderer.dispose();renderer.domElement.remove();disposeRoomCaches();};
   signal.addEventListener('abort',dispose,{once:true});
   try {
-    // Settle both loads so a failure or abort cannot leak the other model.
-    const loaded=await Promise.allSettled([
-      new GLTFLoader().loadAsync('/models/panda/panda-rigged-v2.glb'),
-      new GLTFLoader().loadAsync('/models/pig/pig-rigged.glb'),
-    ]);
+    // Settle every load so a failure or abort cannot leak another model.
+    const kinds=Object.keys(CRITTERS) as CritterKind[];
+    const loaded=await Promise.allSettled(kinds.map(kind=>new GLTFLoader().loadAsync(CRITTERS[kind].model)));
     const failed=loaded.find(r=>r.status==='rejected');
     if(disposed||failed){
       loaded.forEach(r=>{if(r.status==='fulfilled')disposeTree(r.value.scene);});
       signal.throwIfAborted();
       if(failed?.status==='rejected')throw failed.reason;
     }
-    const [gltf,pig]=loaded.map(r=>{if(r.status==='rejected')throw r.reason;return r.value;});
+    const models=Object.fromEntries(loaded.map((r,i)=>{if(r.status==='rejected')throw r.reason;return [kinds[i],r.value.scene];})) as Record<CritterKind,THREE.Group>;
     // Keep the source resources in the disposal tree, but never render T-poses.
-    gltf.scene.visible=false;pig.scene.visible=false;scene.add(gltf.scene,pig.scene);
+    Object.values(models).forEach(model=>{model.visible=false;scene.add(model);});
     // Neutralize the warm pigment baked into this panda's albedo only.
     // Preserve texture detail and scene lighting; dark patches remain charcoal.
     const pandaMaterials=new Set<THREE.MeshStandardMaterial>();
-    gltf.scene.traverse(o=>{const m=o as THREE.Mesh;if(m.isMesh)for(const mat of Array.isArray(m.material)?m.material:[m.material])if(mat instanceof THREE.MeshStandardMaterial)pandaMaterials.add(mat);});
+    models.panda.traverse(o=>{const m=o as THREE.Mesh;if(m.isMesh)for(const mat of Array.isArray(m.material)?m.material:[m.material])if(mat instanceof THREE.MeshStandardMaterial)pandaMaterials.add(mat);});
     pandaMaterials.forEach(mat=>{
       mat.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
         float pandaLuma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
@@ -202,7 +200,7 @@ export async function createPandaScene(host:HTMLElement,initialRoom:RoomPublicSt
     });
     pool=Array.from({length:8},(_,seat)=>{
       const kind=critterKindForSeat(seat);
-      const actor=new CritterActor(kind==='pig'?pig.scene:gltf.scene,seat,kind);
+      const actor=new CritterActor(models[kind],seat,kind);
       roster.add(actor.group);return actor;
     });
     setRoom(initialRoom);

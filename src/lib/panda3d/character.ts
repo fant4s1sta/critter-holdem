@@ -46,24 +46,24 @@ export class CritterActor {
   private thought = 0;
   private readonly height = 2;
   constructor(source: THREE.Object3D, private readonly index: number, readonly kind: CritterKind = 'panda') {
-    this.grip=kind==='pig'?PIG_GRIP:PANDA_GRIP;
+    this.grip=kind!=='panda'?PIG_GRIP:PANDA_GRIP;
     const model=clone(source);model.visible=true;this.group.add(this.poseRoot);this.poseRoot.add(model);this.poseRoot.scale.setScalar(this.height);this.poseRoot.position.y=.57;
     let skinned:THREE.SkinnedMesh|undefined;
     model.traverse(o=>{if((o as THREE.Bone).isBone)this.bones[o.name]=o;if((o as THREE.SkinnedMesh).isSkinnedMesh){skinned=o as THREE.SkinnedMesh;o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;}});
     if(!skinned)throw new Error(`${kind} 模型缺少骨骼网格`);this.skin=skinned;
-    this.head=this.bones[kind==='pig'?'Head':'tripoHead_0'];
+    this.head=this.bones[kind!=='panda'?'Head':'tripoHead_0'];
     if(!this.head)throw new Error(`${kind} 骨骼版本不匹配`);
     for(const bone of Object.values(this.bones))this.rests.set(bone,bone.quaternion.clone());
     // Both generated rigs need enough reach for a bent-arm grip. Without this
-    // extension the pig IK target is unreachable and the cards appear to float.
-    for(const name of kind==='pig'?['L_Forearm','L_Hand','R_Forearm','R_Hand']:['bone_10','bone_11','bone_14','bone_15'])this.bones[name].position.multiplyScalar(1.3);
+    // extension the short-arm IK target is unreachable and the cards appear to float.
+    for(const name of kind!=='panda'?['L_Forearm','L_Hand','R_Forearm','R_Hand']:['bone_10','bone_11','bone_14','bone_15'])this.bones[name].position.multiplyScalar(1.3);
     this.group.updateMatrixWorld(true);
     // Bring the short legs over the cushion's front edge. Moving the hip
     // roots keeps the torso/card grip fixed instead of lifting the whole actor.
-    for(const name of kind==='pig'?['L_Thigh','R_Thigh']:['tripo1_Left_Limb_0','tripo0_Right_Limb_0']){
+    for(const name of kind!=='panda'?['L_Thigh','R_Thigh']:['tripo1_Left_Limb_0','tripo0_Right_Limb_0']){
       const hip=this.bones[name];
       const p=this.poseRoot.worldToLocal(hip.getWorldPosition(V()));
-      p.y+=kind==='pig'?.04:.02;p.z+=.11;
+      p.y+=kind!=='panda'?.04:.02;p.z+=.11;
       hip.position.copy(hip.parent!.worldToLocal(this.poseRoot.localToWorld(p)));
     }
     this.group.updateMatrixWorld(true);
@@ -91,20 +91,20 @@ export class CritterActor {
   private pose() {
     for(const [b,q]of this.rests)b.quaternion.copy(q);
     this.group.updateWorldMatrix(true,true);
-    const pig=this.kind==='pig',grip=this.holdingBlend;
+    const biped=this.kind!=='panda',grip=this.holdingBlend;
     for(const side of [-1,1]) {
       const prefix=side===1?'L':'R';
-      const [clavicle,upper,elbow,hand]=(pig
+      const [clavicle,upper,elbow,hand]=(biped
         ? [`${prefix}_Clavicle`,`${prefix}_Upperarm`,`${prefix}_Forearm`,`${prefix}_Hand`]
         : side===1?['tripo0_Left_Limb_1','bone_9','bone_10','bone_11']:['bone_12','bone_13','bone_14','bone_15']
       ).map(name=>this.bones[name]);
-      aim(clavicle,upper,this.point(side*(pig?.19:.14),pig?.44:.445,pig?.035:.034));
+      aim(clavicle,upper,this.point(side*(biped?.19:.14),biped?.44:.445,biped?.035:.034));
       twoBone(upper,elbow,hand,this.point(
-        side*THREE.MathUtils.lerp(pig?.19:.17,this.grip.tipX,grip),
+        side*THREE.MathUtils.lerp(biped?.19:.17,this.grip.tipX,grip),
         THREE.MathUtils.lerp(.29,this.grip.tipY,grip),
-        THREE.MathUtils.lerp(pig?.13:.10,this.grip.tipZ,grip),
-      ),this.point(side*(pig?.31:.27),pig?.34:THREE.MathUtils.lerp(.28,.34,grip),pig?.13:THREE.MathUtils.lerp(.06,.16,grip)));
-      if(pig){
+        THREE.MathUtils.lerp(biped?.13:.10,this.grip.tipZ,grip),
+      ),this.point(side*(biped?.31:.27),biped?.34:THREE.MathUtils.lerp(.28,.34,grip),biped?.13:THREE.MathUtils.lerp(.06,.16,grip)));
+      if(biped){
         aim(hand,this.bones[`${prefix}_Mid1`],this.point(side*THREE.MathUtils.lerp(.06,.13,grip),THREE.MathUtils.lerp(.27,.49,grip),THREE.MathUtils.lerp(.17,.285,grip)));
         const hip=this.bones[`${prefix}_Thigh`],knee=this.bones[`${prefix}_Calf`],foot=this.bones[`${prefix}_Foot`];
         aim(hip,knee,this.point(side*.14,.16,.24));

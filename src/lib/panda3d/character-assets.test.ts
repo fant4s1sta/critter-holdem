@@ -4,8 +4,8 @@ import { test } from 'node:test';
 
 // Protect the asset/controller contract: replacing a generated GLB with a new
 // rig must not silently break hands, legs or facial animation at runtime.
-test('pig GLB contains the complete game rig and nonempty facial controls', () => {
-  const bytes = readFileSync(new URL('../../../public/models/pig/pig-rigged.glb', import.meta.url));
+for (const kind of ['pig', 'fox']) test(`${kind} GLB contains the complete game rig and nonempty facial controls`, () => {
+  const bytes = readFileSync(new URL(`../../../public/models/${kind}/${kind}-rigged.glb`, import.meta.url));
   assert.equal(bytes.toString('utf8', 0, 4), 'glTF');
   assert.equal(bytes.readUInt32LE(4), 2);
   assert.equal(bytes.readUInt32LE(8), bytes.length);
@@ -13,7 +13,7 @@ test('pig GLB contains the complete game rig and nonempty facial controls', () =
   const gltf = JSON.parse(bytes.toString('utf8', 20, 20 + jsonLength));
   const joints = new Set(gltf.skins[0].joints.map((i: number) => gltf.nodes[i].name));
   for (const bone of ['Head', ...['L', 'R'].flatMap(side =>
-    ['Clavicle', 'Upperarm', 'Forearm', 'Hand', 'Mid1', 'Thigh', 'Calf', 'Foot'].map(part => `${side}_${part}`))]) {
+    ['Clavicle', 'Upperarm', 'Forearm', 'Hand', 'Mid1', 'Thigh', 'Calf', 'Foot', 'ToeBase'].map(part => `${side}_${part}`))]) {
     assert.ok(joints.has(bone), `missing controller bone: ${bone}`);
   }
   const mesh = gltf.meshes[0];

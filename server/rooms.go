@@ -239,10 +239,7 @@ func (r *room) bot() error {
 	if seat < 0 {
 		return errors.New("房间已满")
 	}
-	animal := "熊猫"
-	if seat%2 == 1 {
-		animal = "小猪"
-	}
+	animal := [...]string{"熊猫", "小猪", "狐狸"}[seat%3]
 	p := newMember(fmt.Sprintf("%s %d", animal, seat+1), seat)
 	p.bot = true
 	r.players = append(r.players, p)
