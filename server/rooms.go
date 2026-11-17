@@ -31,6 +31,7 @@ type identity struct {
 
 type member struct {
 	identity
+	critter    string
 	seat       int
 	chips      int
 	bot        bool
@@ -76,8 +77,9 @@ func newMember(name string, seat int) *member {
 	return &member{identity: identity{PlayerID: cryptorand.Text(), Secret: cryptorand.Text(), Name: name}, seat: seat, chips: startingChips}
 }
 
-func (s *rooms) create(c *client, name string) (*room, identity) {
+func (s *rooms) create(c *client, name, critter string) (*room, identity) {
 	host := newMember(name, 0)
+	host.critter = critter
 	r := &room{status: "lobby", host: host, players: []*member{host}, members: map[string]*member{host.PlayerID: host}}
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -94,7 +96,7 @@ func (s *rooms) create(c *client, name string) (*room, identity) {
 	return r, host.identity
 }
 
-func (r *room) join(c *client, name string) (identity, error) {
+func (r *room) join(c *client, name, critter string) (identity, error) {
 	seat := -1
 	if r.status == "lobby" {
 		seat = r.freeSeat()
@@ -106,6 +108,7 @@ func (r *room) join(c *client, name string) (identity, error) {
 		return identity{}, errors.New("房间人数已达上限")
 	}
 	p := newMember(name, seat)
+	p.critter = critter
 	if seat >= 0 {
 		r.players = append(r.players, p)
 		slices.SortFunc(r.players, func(a, b *member) int { return a.seat - b.seat })
@@ -241,6 +244,7 @@ func (r *room) bot() error {
 	}
 	animal := [...]string{"熊猫", "小猪", "狐狸"}[seat%3]
 	p := newMember(fmt.Sprintf("%s %d", animal, seat+1), seat)
+	p.critter = [...]string{"panda", "pig", "fox"}[seat%3]
 	p.bot = true
 	r.players = append(r.players, p)
 	slices.SortFunc(r.players, func(a, b *member) int { return a.seat - b.seat })
@@ -339,6 +343,14 @@ func (r *room) play(c *client, req request) error {
 		return errors.New("房间连接已失效")
 	}
 	switch req.Type {
+	case "select_critter":
+		if r.status != "lobby" || p.seat < 0 {
+			return errors.New("只能在准备开局时选择角色")
+		}
+		if req.Critter != "panda" && req.Critter != "pig" && req.Critter != "fox" {
+			return errors.New("请选择有效的小动物角色")
+		}
+		p.critter = req.Critter
 	case "add_bot", "start":
 		if p != r.host || r.status != "lobby" {
 			return errors.New("只有房主可以在大厅执行此操作")

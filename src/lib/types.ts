@@ -1,3 +1,5 @@
+import type { CritterKind } from "./critters";
+
 type Suit = "s" | "h" | "d" | "c";
 type Rank = "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "T" | "J" | "Q" | "K" | "A";
 
@@ -13,6 +15,7 @@ export interface PlayerIdentity {
 }
 
 export interface PublicPlayer {
+  critter: CritterKind;
   id: string;
   name: string;
   seat: number;

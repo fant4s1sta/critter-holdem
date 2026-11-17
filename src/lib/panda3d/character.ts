@@ -45,7 +45,7 @@ export class CritterActor {
   private happy = 0;
   private thought = 0;
   private readonly height = 2;
-  constructor(source: THREE.Object3D, private readonly index: number, readonly kind: CritterKind = 'panda') {
+  constructor(source: THREE.Object3D, private readonly index: number, readonly kind: CritterKind = 'panda', private readonly stance: 'seated' | 'hero' = 'seated') {
     this.grip=kind!=='panda'?PIG_GRIP:PANDA_GRIP;
     const model=clone(source);model.visible=true;this.group.add(this.poseRoot);this.poseRoot.add(model);this.poseRoot.scale.setScalar(this.height);this.poseRoot.position.y=.57;
     let skinned:THREE.SkinnedMesh|undefined;
@@ -56,11 +56,11 @@ export class CritterActor {
     for(const bone of Object.values(this.bones))this.rests.set(bone,bone.quaternion.clone());
     // Both generated rigs need enough reach for a bent-arm grip. Without this
     // extension the short-arm IK target is unreachable and the cards appear to float.
-    for(const name of kind!=='panda'?['L_Forearm','L_Hand','R_Forearm','R_Hand']:['bone_10','bone_11','bone_14','bone_15'])this.bones[name].position.multiplyScalar(1.3);
+    if(stance==='seated')for(const name of kind!=='panda'?['L_Forearm','L_Hand','R_Forearm','R_Hand']:['bone_10','bone_11','bone_14','bone_15'])this.bones[name].position.multiplyScalar(1.3);
     this.group.updateMatrixWorld(true);
     // Bring the short legs over the cushion's front edge. Moving the hip
     // roots keeps the torso/card grip fixed instead of lifting the whole actor.
-    for(const name of kind!=='panda'?['L_Thigh','R_Thigh']:['tripo1_Left_Limb_0','tripo0_Right_Limb_0']){
+    if(stance==='seated')for(const name of kind!=='panda'?['L_Thigh','R_Thigh']:['tripo1_Left_Limb_0','tripo0_Right_Limb_0']){
       const hip=this.bones[name];
       const p=this.poseRoot.worldToLocal(hip.getWorldPosition(V()));
       p.y+=kind!=='panda'?.04:.02;p.z+=.11;
@@ -98,6 +98,13 @@ export class CritterActor {
         ? [`${prefix}_Clavicle`,`${prefix}_Upperarm`,`${prefix}_Forearm`,`${prefix}_Hand`]
         : side===1?['tripo0_Left_Limb_1','bone_9','bone_10','bone_11']:['bone_12','bone_13','bone_14','bone_15']
       ).map(name=>this.bones[name]);
+      if(this.stance==='hero'){
+        // A relaxed hands-on-hips stance; the original straight legs stay intact.
+        aim(clavicle,upper,this.point(side*.17,.47,.015));
+        twoBone(upper,elbow,hand,this.point(side*.14,.36,.11),this.point(side*.30,.39,.025));
+        if(biped)aim(hand,this.bones[`${prefix}_Mid1`],this.point(side*.13,.30,.14));
+        continue;
+      }
       aim(clavicle,upper,this.point(side*(biped?.19:.14),biped?.44:.445,biped?.035:.034));
       twoBone(upper,elbow,hand,this.point(
         side*THREE.MathUtils.lerp(biped?.19:.17,this.grip.tipX,grip),
@@ -143,4 +150,20 @@ export class CritterActor {
     if(this.skin.morphTargetInfluences&&this.skin.morphTargetDictionary)for(const [key,v]of Object.entries(values)){const index=this.skin.morphTargetDictionary[key];if(index!==undefined)this.skin.morphTargetInfluences[index]=v;}
     this.face?.update(blink,happy,thought);
   }
+}
+
+export function neutralizePanda(source: THREE.Object3D) {
+    // Neutralize the warm pigment baked into this panda's albedo only.
+    // Preserve texture detail and scene lighting; dark patches remain charcoal.
+    const pandaMaterials=new Set<THREE.MeshStandardMaterial>();
+    source.traverse(o=>{const m=o as THREE.Mesh;if(m.isMesh)for(const mat of Array.isArray(m.material)?m.material:[m.material])if(mat instanceof THREE.MeshStandardMaterial)pandaMaterials.add(mat);});
+    pandaMaterials.forEach(mat=>{
+      mat.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
+        float pandaLuma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+        float pandaWhite = smoothstep(0.16, 0.5, pandaLuma);
+        float pandaTone = pandaLuma * mix(0.42, 1.08, pandaWhite);
+        diffuseColor.rgb = vec3(pandaTone) * vec3(0.94, 1.0, 1.12);
+      `);};
+      mat.customProgramCacheKey=()=> 'panda-neutral-black-white-v1';mat.needsUpdate=true;
+    });
 }

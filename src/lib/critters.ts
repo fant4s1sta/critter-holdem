@@ -1,11 +1,10 @@
 export const CRITTERS = {
-  panda: { icon: '🐼', model: '/models/panda/panda-rigged-v2.glb', pawColor: '#24282d' },
-  pig: { icon: '🐷', model: '/models/pig/pig-rigged.glb', pawColor: '#b46e59' },
-  fox: { icon: '🦊', model: '/models/fox/fox-rigged.glb', pawColor: '#563629' },
+  panda: { name: '熊猫', icon: '🐼', model: '/models/panda/panda-rigged-v2.glb', pawColor: '#24282d' },
+  pig: { name: '小猪', icon: '🐷', model: '/models/pig/pig-rigged.glb', pawColor: '#b46e59' },
+  fox: { name: '狐狸', icon: '🦊', model: '/models/fox/fox-rigged.glb', pawColor: '#563629' },
 } as const;
 export type CritterKind = keyof typeof CRITTERS;
-const SEAT_KINDS: readonly CritterKind[] = ['panda', 'pig', 'fox'];
-
-/** A stable room seat keeps the same animal for every viewer and reconnect. */
-export const critterKindForSeat = (seat: number): CritterKind => SEAT_KINDS[seat % SEAT_KINDS.length];
-export const critterIconForSeat = (seat: number) => CRITTERS[critterKindForSeat(seat)].icon;
+export const CRITTER_KINDS = Object.keys(CRITTERS) as CritterKind[];
+export function isCritterKind(value: unknown): value is CritterKind {
+  return typeof value === 'string' && Object.hasOwn(CRITTERS, value);
+}

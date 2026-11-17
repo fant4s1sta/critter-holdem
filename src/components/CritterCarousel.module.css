@@ -1,0 +1,10 @@
+.carousel { position: relative; height: 164px; margin: 7px 0 9px; overflow: hidden; border: 1px solid #80704b; border-radius: 15px; background: radial-gradient(ellipse at 50% 80%, #66734b55, transparent 65%), linear-gradient(#192c22, #112019); box-shadow: inset 0 1px #ffe0a319; }
+.stage { position: absolute; inset: 9px 0 15px; }
+.stage canvas { display: block; width: 100%; height: 100%; }
+.caption { position: absolute; top: 8px; left: 11px; color: #c5c1a8; font-size: 10px; z-index: 1; }
+.previous, .next { position: absolute; top: 55px; width: 32px; height: 42px; border: 1px solid #b89c6599; border-radius: 13px; background: linear-gradient(#645235, #372d20); color: #ffe0a3; font-size: 30px; line-height: 1; box-shadow: 0 3px #0a130d77; }
+.previous { left: 9px; } .next { right: 9px; }
+.previous:focus-visible, .next:focus-visible { outline: 2px solid #ffe0a3; outline-offset: 2px; }
+.selected { position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%); display: flex; align-items: baseline; gap: 8px; white-space: nowrap; border: 1px solid #bca06a66; border-radius: 20px; padding: 3px 12px; background: #253426ed; }
+.selected strong { font-size: 13px; color: #ffdc9c; } .selected span { font-size: 10px; color: #cbc8ac; }
+.loading { position: absolute; top: 60px; left: 0; right: 0; text-align: center; font-size: 11px; color: #cbc8ac; }

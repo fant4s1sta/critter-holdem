@@ -7,6 +7,7 @@ import (
 )
 
 type publicPlayer struct {
+	Critter       string       `json:"critter"`
 	ID            string       `json:"id"`
 	Name          string       `json:"name"`
 	Seat          int          `json:"seat"`
@@ -77,7 +78,7 @@ func (r *room) state(viewer *member) roomState {
 		}
 	}
 	for _, p := range r.players {
-		out := publicPlayer{ID: p.PlayerID, Name: p.Name, Seat: p.seat, Chips: p.chips, IsHost: p == r.host, Connected: p.bot || p.connection != nil, AIControlled: p.bot || p.away}
+		out := publicPlayer{Critter: p.critter, ID: p.PlayerID, Name: p.Name, Seat: p.seat, Chips: p.chips, IsHost: p == r.host, Connected: p.bot || p.connection != nil, AIControlled: p.bot || p.away}
 		if g != nil {
 			if inHand := g.Find(p.PlayerID); inHand != nil {
 				out.Folded, out.AllIn, out.Bet = inHand.Folded, inHand.AllIn, inHand.Bet

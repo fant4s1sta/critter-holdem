@@ -1,3 +1,4 @@
+import { isCritterKind, type CritterKind } from "./critters";
 import type { PlayerIdentity } from "./types";
 
 const SESSION_KEY = "critter-holdem.session.v2";
@@ -41,4 +42,15 @@ export function savePreferredName(name: string) {
   } catch {
     // Room entry still works with browser storage disabled.
   }
+}
+
+export function getPreferredCritter(): CritterKind {
+  try {
+    const value = localStorage.getItem("critter-holdem.player.critter");
+    return isCritterKind(value) ? value : "panda";
+  } catch { return "panda"; }
+}
+export function savePreferredCritter(critter: CritterKind) {
+  try { localStorage.setItem("critter-holdem.player.critter", critter); }
+  catch { /* Selection still works without browser storage. */ }
 }

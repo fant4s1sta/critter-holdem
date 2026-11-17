@@ -19,6 +19,7 @@ type request struct {
 	ID       int          `json:"id"`
 	Type     string       `json:"type"`
 	Name     string       `json:"name"`
+	Critter  string       `json:"critter"`
 	Code     string       `json:"code"`
 	PlayerID string       `json:"playerId"`
 	Secret   string       `json:"secret"`
@@ -64,8 +65,17 @@ func (s *rooms) dispatch(c *client, req request) message {
 			reply.Error = "请先离开当前房间"
 			return reply
 		}
+		if req.Type != "resume" {
+			if req.Critter == "" {
+				req.Critter = "panda"
+			}
+			if req.Critter != "panda" && req.Critter != "pig" && req.Critter != "fox" {
+				reply.Error = "请选择有效的小动物角色"
+				return reply
+			}
+		}
 		if req.Type == "create" {
-			r, id := s.create(c, req.Name)
+			r, id := s.create(c, req.Name, req.Critter)
 			reply.Code, reply.Identity = r.code, &id
 			return reply
 		}
@@ -79,7 +89,7 @@ func (s *rooms) dispatch(c *client, req request) message {
 		if r.closed {
 			reply.Error, reply.ErrorCode = "房间不存在或已关闭", "missing_room"
 		} else if req.Type == "join" {
-			id, err := r.join(c, req.Name)
+			id, err := r.join(c, req.Name, req.Critter)
 			if err != nil {
 				reply.Error = err.Error()
 			} else {

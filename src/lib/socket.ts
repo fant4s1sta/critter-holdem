@@ -1,10 +1,12 @@
+import type { CritterKind } from "./critters";
 import type { Session } from "./session";
 import type { GameActionPayload, PlayerIdentity, RoomPublicState } from "./types";
 
 type Command =
-  | { type: "create"; name: string }
-  | { type: "join"; name: string; code: string }
+  | { type: "create"; name: string; critter: CritterKind }
+  | { type: "join"; name: string; code: string; critter: CritterKind }
   | ({ type: "resume" } & Session)
+  | { type: "select_critter"; critter: CritterKind }
   | { type: "add_bot" | "start" | "leave" }
   | { type: "action"; turn: number; action: GameActionPayload };
 

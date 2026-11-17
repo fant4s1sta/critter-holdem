@@ -2,7 +2,9 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { GameActionPayload, RoomPublicState } from "@/lib/types";
 import type { RoomSocket } from "@/lib/socket";
 import type { PandaScene } from "@/lib/panda3d/scene";
-import { critterIconForSeat } from "@/lib/critters";
+import { CritterCarousel } from "./CritterCarousel";
+import { savePreferredCritter } from "@/lib/session";
+import { CRITTERS } from "@/lib/critters";
 import { CHIP_VALUES, chipTotal } from "@/lib/chips";
 import { CHIP_COLORS, selectedRaise } from "@/lib/panda3d/live-state";
 import styles from "./Room3DClient.module.css";
@@ -116,6 +118,7 @@ export function Room3DClient({
     setError("");
     try {
       await request(command);
+      if (command.type === "select_critter") savePreferredCritter(command.critter);
       if (command.type === "leave") onLeave();
     } catch (error) {
       setError(error instanceof Error ? error.message : "操作失败，请重试");
@@ -160,11 +163,13 @@ export function Room3DClient({
           </div>
           <span className={styles.seatCount} role="status"><b>{room.players.length}</b> / {maxPlayers} 人</span>
         </div>
+        {me && <CritterCarousel value={me.critter} disabled={!connected || !!pending}
+          onChange={critter => void submit({ type: "select_critter", critter })} />}
         <ul className={styles.seats} aria-label="牌桌座位">
           {Array.from({ length: maxPlayers }, (_, seat) => {
             const player = room.players.find(entry => entry.seat === seat);
             return <li className={styles.lobbySeat} key={seat} data-occupied={!!player} data-host={!!player?.isHost}>
-              <span className={styles.seatIcon} aria-hidden="true">{player ? critterIconForSeat(player.seat) : "·"}</span>
+              <span className={styles.seatIcon} aria-hidden="true">{player ? CRITTERS[player.critter].icon : "·"}</span>
               <div className={styles.seatIdentity}>
                 <span className={styles.seatName} title={player?.name}>{player?.name ?? "空位"}</span>
                 {player?.isHost && <span className={styles.hostBadge}>房主</span>}

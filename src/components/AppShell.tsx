@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { readSession, saveSession, type Session } from "@/lib/session";
+import { readSession, saveSession, getPreferredCritter, type Session } from "@/lib/session";
 import { RoomError, RoomSocket } from "@/lib/socket";
 import { readRoomCodeFromLocation, replaceRoomUrl } from "@/lib/spa-route";
 import type { RoomPublicState } from "@/lib/types";
@@ -87,7 +87,8 @@ export function AppShell() {
 
   async function enter(mode: "create" | "join", name: string, code: string) {
     setNotice("");
-    const response = await request(mode === "create" ? { type: "create", name } : { type: "join", name, code });
+    const critter = getPreferredCritter();
+    const response = await request(mode === "create" ? { type: "create", name, critter } : { type: "join", name, code, critter });
     if (!response.code || !response.identity) throw new RoomError("服务器未返回房间身份");
     changeSession({ code: response.code, ...response.identity });
   }

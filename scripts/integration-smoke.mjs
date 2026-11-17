@@ -48,12 +48,20 @@ async function until(predicate, label, timeout = 5000) {
 
 try {
   const host = await connect();
-  const { code, identity: hostID } = await host.request("create", { name: "Host" });
+  await host.request("create", { name: "Invalid", critter: "dragon" }, /角色/);
+  const { code, identity: hostID } = await host.request("create", { name: "Host", critter: "fox" });
   const guest = await connect();
-  const { identity: guestID } = await guest.request("join", { name: "Guest", code });
+  const { identity: guestID } = await guest.request("join", { name: "Guest", code, critter: "fox" });
+  assert.ok(guest.state.players.every(player => player.critter === "fox"));
+  await guest.request("select_critter", { critter: "dragon" }, /角色/);
+  await guest.request("select_critter", { critter: "pig" });
+  await until(() => host.state.players.find(player => player.id === guestID.playerId)?.critter === "pig", "role broadcast");
+  await guest.request("select_critter", { critter: "fox" });
+  await until(() => host.state.players.find(player => player.id === guestID.playerId)?.critter === "fox", "role switched back");
   await guest.request("start", {}, /房主/);
   await host.request("start");
   await until(() => guest.state?.status === "playing", "guest start");
+  await guest.request("select_critter", { critter: "panda" }, /准备开局/);
   for (const client of [host, guest]) {
     assert.equal(client.state.players.find(player => player.id === client.state.you.playerId).holeCards.length, 2);
     assert.equal(client.state.players.find(player => player.id !== client.state.you.playerId).holeCards, null);
@@ -79,6 +87,7 @@ try {
   const resumed = await connect();
   await resumed.request("resume", { code, ...guestID, secret: "wrong" }, /身份/);
   await resumed.request("resume", { code, ...guestID });
+  assert.equal(resumed.state.players.find(player => player.id === guestID.playerId).critter, "fox");
   assert.equal(resumed.state.players.find(player => player.id === guestID.playerId).aiControlled, false);
 
   for (let i = 0; i < 10 && host.state.game.street !== "showdown"; i++) {
