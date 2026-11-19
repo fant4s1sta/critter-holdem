@@ -237,14 +237,27 @@ func (s *rooms) closeRoom(r *room) {
 	s.mu.Unlock()
 }
 
+var critterChoices = [...]struct{ kind, name string }{
+	{"panda", "熊猫"}, {"pig", "小猪"}, {"fox", "狐狸"},
+}
+
+func validCritter(kind string) bool {
+	for _, animal := range critterChoices {
+		if animal.kind == kind {
+			return true
+		}
+	}
+	return false
+}
+
 func (r *room) bot() error {
 	seat := r.freeSeat()
 	if seat < 0 {
 		return errors.New("房间已满")
 	}
-	animal := [...]string{"熊猫", "小猪", "狐狸"}[seat%3]
-	p := newMember(fmt.Sprintf("%s %d", animal, seat+1), seat)
-	p.critter = [...]string{"panda", "pig", "fox"}[seat%3]
+	animal := critterChoices[seat%len(critterChoices)]
+	p := newMember(fmt.Sprintf("%s %d", animal.name, seat+1), seat)
+	p.critter = animal.kind
 	p.bot = true
 	r.players = append(r.players, p)
 	slices.SortFunc(r.players, func(a, b *member) int { return a.seat - b.seat })
@@ -347,7 +360,7 @@ func (r *room) play(c *client, req request) error {
 		if r.status != "lobby" || p.seat < 0 {
 			return errors.New("只能在准备开局时选择角色")
 		}
-		if req.Critter != "panda" && req.Critter != "pig" && req.Critter != "fox" {
+		if !validCritter(req.Critter) {
 			return errors.New("请选择有效的小动物角色")
 		}
 		p.critter = req.Critter

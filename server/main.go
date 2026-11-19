@@ -69,7 +69,7 @@ func (s *rooms) dispatch(c *client, req request) message {
 			if req.Critter == "" {
 				req.Critter = "panda"
 			}
-			if req.Critter != "panda" && req.Critter != "pig" && req.Critter != "fox" {
+			if !validCritter(req.Critter) {
 				reply.Error = "请选择有效的小动物角色"
 				return reply
 			}
