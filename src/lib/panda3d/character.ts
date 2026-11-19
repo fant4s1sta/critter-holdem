@@ -46,13 +46,17 @@ export class CritterActor {
   private thought = 0;
   private readonly height = 2;
   constructor(source: THREE.Object3D, private readonly index: number, readonly kind: CritterKind = 'panda', private readonly stance: 'seated' | 'hero' = 'seated') {
-    this.grip = kind === 'pig'
+    this.grip = kind === 'pig' || kind === 'tiger'
       ? { ...PIG_GRIP, tipX: .142, tipY: .391, tipZ: .266 }
       : kind === 'panda' ? PANDA_GRIP : PIG_GRIP;
     const model=clone(source);model.visible=true;this.group.add(this.poseRoot);this.poseRoot.add(model);this.poseRoot.scale.setScalar(this.height);this.poseRoot.position.y=.57;
     let skinned:THREE.SkinnedMesh|undefined;
     model.traverse(o=>{if((o as THREE.Bone).isBone)this.bones[o.name]=o;if((o as THREE.SkinnedMesh).isSkinnedMesh){skinned=o as THREE.SkinnedMesh;o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;}});
     if(!skinned)throw new Error(`${kind} 模型缺少骨骼网格`);this.skin=skinned;
+    const tailPose = this.skin.morphTargetDictionary?.seatedTail;
+    if (tailPose !== undefined && this.skin.morphTargetInfluences) {
+      this.skin.morphTargetInfluences[tailPose] = stance === 'seated' ? 1 : 0;
+    }
     this.head=this.bones[kind!=='panda'?'Head':'tripoHead_0'];
     if(!this.head)throw new Error(`${kind} 骨骼版本不匹配`);
     for(const bone of Object.values(this.bones))this.rests.set(bone,bone.quaternion.clone());
