@@ -46,7 +46,7 @@ export class CritterActor {
   private thought = 0;
   private readonly height = 2;
   constructor(source: THREE.Object3D, private readonly index: number, readonly kind: CritterKind = 'panda', private readonly stance: 'seated' | 'hero' = 'seated') {
-    this.grip = kind === 'pig' || kind === 'tiger'
+    this.grip = kind === 'pig' || kind === 'tiger' || kind === 'rabbit'
       ? { ...PIG_GRIP, tipX: .142, tipY: .391, tipZ: .266 }
       : kind === 'panda' ? PANDA_GRIP : PIG_GRIP;
     const model=clone(source);model.visible=true;this.group.add(this.poseRoot);this.poseRoot.add(model);this.poseRoot.scale.setScalar(this.height);this.poseRoot.position.y=.57;

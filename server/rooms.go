@@ -238,7 +238,7 @@ func (s *rooms) closeRoom(r *room) {
 }
 
 var critterChoices = [...]struct{ kind, name string }{
-	{"panda", "熊猫"}, {"pig", "小猪"}, {"fox", "狐狸"}, {"tiger", "小老虎"},
+	{"panda", "熊猫"}, {"pig", "小猪"}, {"fox", "狐狸"}, {"tiger", "小老虎"}, {"rabbit", "小兔"},
 }
 
 func validCritter(kind string) bool {
