@@ -4,7 +4,7 @@ import { test } from 'node:test';
 
 // Protect the asset/controller contract: replacing a generated GLB with a new
 // rig must not silently break hands, legs or facial animation at runtime.
-for (const kind of ['pig', 'fox', 'tiger', 'rabbit']) test(`${kind} GLB contains the complete game rig and nonempty facial controls`, () => {
+for (const kind of ['pig', 'fox', 'tiger', 'rabbit', 'dog']) test(`${kind} GLB contains the complete game rig and nonempty facial controls`, () => {
   const bytes = readFileSync(new URL(`../../../public/models/${kind}/${kind}-rigged.glb`, import.meta.url));
   assert.equal(bytes.toString('utf8', 0, 4), 'glTF');
   assert.equal(bytes.readUInt32LE(4), 2);
