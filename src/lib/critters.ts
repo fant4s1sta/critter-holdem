@@ -5,6 +5,7 @@ export const CRITTERS = {
   tiger: { name: '小老虎', icon: '🐯', model: '/models/tiger/tiger-rigged.glb', pawColor: '#613d30' },
   rabbit: { name: '小兔', icon: '🐰', model: '/models/rabbit/rabbit-rigged.glb', pawColor: '#d5ab86' },
   dog: { name: '小狗', icon: '🐶', model: '/models/dog/dog-rigged.glb', pawColor: '#efe1d0' },
+  cow: { name: '奶牛', icon: '🐮', model: '/models/cow/cow-rigged.glb', pawColor: '#484044' },
 } as const;
 export type CritterKind = keyof typeof CRITTERS;
 export const CRITTER_KINDS = Object.keys(CRITTERS) as CritterKind[];

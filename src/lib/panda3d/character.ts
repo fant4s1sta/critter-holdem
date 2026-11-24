@@ -46,10 +46,13 @@ export class CritterActor {
   private thought = 0;
   private readonly height = 2;
   constructor(source: THREE.Object3D, private readonly index: number, readonly kind: CritterKind = 'panda', private readonly stance: 'seated' | 'hero' = 'seated') {
-    this.grip = kind === 'pig' || kind === 'tiger' || kind === 'rabbit' || kind === 'dog'
+    this.grip = kind !== 'panda' && kind !== 'fox'
       ? { ...PIG_GRIP, tipX: .142, tipY: .391, tipZ: .266 }
       : kind === 'panda' ? PANDA_GRIP : PIG_GRIP;
-    const model=clone(source);model.visible=true;this.group.add(this.poseRoot);this.poseRoot.add(model);this.poseRoot.scale.setScalar(this.height);this.poseRoot.position.y=.57;
+    const model = clone(source);
+    // Match the cow's seated silhouette to the fox while keeping cards at table scale.
+    if (kind === 'cow') model.scale.multiplyScalar(1.08);
+    model.visible=true;this.group.add(this.poseRoot);this.poseRoot.add(model);this.poseRoot.scale.setScalar(this.height);this.poseRoot.position.y=.57;
     let skinned:THREE.SkinnedMesh|undefined;
     model.traverse(o=>{if((o as THREE.Bone).isBone)this.bones[o.name]=o;if((o as THREE.SkinnedMesh).isSkinnedMesh){skinned=o as THREE.SkinnedMesh;o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;}});
     if(!skinned)throw new Error(`${kind} 模型缺少骨骼网格`);this.skin=skinned;
