@@ -83,11 +83,15 @@ export class CritterActor {
       this.group.updateMatrixWorld(true);
       this.head.attach(this.face.group);
     }
+    // Tilt the pair toward the table around the lower portion held by the paws.
+    const centerAboveGrip = .04;
+    this.cards.position.set(0, this.grip.cardY - centerAboveGrip, this.grip.cardZ);
+    this.cards.rotation.x = THREE.MathUtils.degToRad(28);
     this.poseRoot.add(this.cards);
     for (const side of [-1, 1]) {
       const card = addCard(this.cards, undefined, undefined, this.grip.cardWidth);
-      card.position.set(side * this.grip.cardSpread, this.grip.cardY, this.grip.cardZ);
-      card.rotation.set(-.08, side * -.06, side * -.12);
+      card.position.set(side * this.grip.cardSpread, centerAboveGrip, 0);
+      card.rotation.set(0, side * -.06, side * -.12);
     }
     this.pose();
   }
